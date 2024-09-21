@@ -1,0 +1,4 @@
+
+document.getElementById(#{fvId bgColorV}).addEventListener('change', function (e) {
+  document.getElementById(#{idIconPalette}).style.color = e.target.value;
+});

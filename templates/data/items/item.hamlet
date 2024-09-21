@@ -1,0 +1,55 @@
+
+<div.overlay ##{idOverlay} data-ui=##{idOverlay} onclick="document.getElementById('#{idDialogDelete}').close()">
+
+^{widgetTopbar (Just $ DataR ItemsR) (msgr MsgItem) idOverlay (Just idDialogDelete) (Just $ DataR $ ItemEditR iid) Nothing}
+
+<main.responsive>
+
+  $maybe Entity _ (Item name descr price currency rating link) <- item
+    <dl.margin>
+      <dt>
+        <label.large>_{MsgName}
+      <dd.margin>
+        #{name}
+
+      <dt>
+        <label.large>_{MsgPrice}
+      <dd.margin>
+        #{price}
+
+      <dt>
+        <label.large>_{MsgCurrency}
+      <dd.margin>
+        #{currency}
+
+      <dt>
+        <label.large>_{MsgRating}
+      <dd.margin>
+        $maybe rating <- rating
+          #{rating}
+
+      <dt>
+        <label.large>_{MsgDescription}
+      <dd.margin>
+        $maybe descr <- descr
+          #{descr}
+
+      <dt>
+        <label.large>_{MsgLink}
+      <dd.margin>
+        $maybe link <- link
+          #{link}
+
+^{widgetSnackbar msgs}
+
+<dialog ##{idDialogDelete}>
+  <h5>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR $ ItemDeleR iid} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

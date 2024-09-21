@@ -1,0 +1,47 @@
+
+<div.overlay ##{idOverlay} data-ui=##{idOverlay} onclick="document.getElementById('#{idDialogDelete}').close()">
+
+^{widgetTopbar (Just $ DataR $ WebpagesR sid) (msgr MsgPage) idOverlay (Just idDialogDelete) Nothing (Just $ PageR sid pid)}
+
+<main.responsive>
+
+  <div>
+    <div.tabs>
+      <a.active href=@{DataR $ WebpageR sid pid}>_{MsgSettings}
+      <a href=@{DataR $ HeaderR sid pid}>_{MsgHeader}
+      <a href=@{DataR $ BodyR sid pid}>_{MsgBody}
+      <a href=#>_{MsgFooter}
+      
+    <div.page.active>
+
+      $maybe Entity pid _ <- webpage
+        <form.margin method=post action=@{DataR $ WebpageR sid pid} enctype=#{et} novalidate>
+          ^{fw}
+          <nav.right-align>
+            <a.button.transparent href=@{DataR $ WebpagesR sid}>
+              _{MsgCancel}
+            <button.primary type=submit>
+              _{MsgSave}
+        
+      $nothing
+        <form.margin method=post action=@{DataR $ WebpagesR sid} enctype=#{et} novalidate>
+          ^{fw}
+          <nav.right-align>
+            <a.button.transparent href=@{DataR $ WebpagesR sid}>
+              _{MsgCancel}
+            <button.primary type=submit>
+              _{MsgCreate}
+
+      ^{widgetSnackbar msgs}
+
+<dialog ##{idDialogDelete}>
+  <h5>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR $ WebpageDeleR sid pid} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

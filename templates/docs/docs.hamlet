@@ -1,0 +1,12 @@
+
+^{widgetTopbar Nothing (msgr MsgDocumentation) idOverlay Nothing Nothing Nothing}
+
+<main.responsive>
+
+  <h1>_{MsgAppName}
+
+  <figure>
+    <img src=@{StaticR img_OpenPlan_ERD_svg} alt=_{MsgEntityRelationshipDiagram}>
+    <figcaption>_{MsgEntityRelationshipDiagram}
+
+  ^{widgetSnackbar msgs}

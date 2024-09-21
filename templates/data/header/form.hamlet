@@ -1,0 +1,120 @@
+
+#{extra}
+
+<div ##{idLogoContainer}>
+  <label for=#{fvId logoV} ##{idLabelPhoto}>
+    <figure.center-align ##{idFigurePhoto}>
+      $maybe Entity hid _ <- header
+        <img src=@{DataR $ HeaderLogoR hid} width=auto height=56 ##{idImgPhoto} loading=lazy alt=_{MsgLogo}>
+      $nothing
+        <img src=@{StaticR img_image_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg} width=auto height=56
+             ##{idImgPhoto} loading=lazy alt=_{MsgLogo}>
+        
+      <figcaption>
+
+        $maybe errs <- fvErrors logoV
+          <div.error>
+            #{errs}
+
+        <button.small.border.round.transparent type=button onclick="document.getElementById('#{idLabelPhoto}').click()">
+          <i>upload_file
+          _{MsgLogo}
+
+  ^{fvInput logoV}
+
+  <details.margin>
+    <summary>
+      #{fvLabel attribV}
+
+    <div.field.textarea.label.border.round :isJust (fvErrors attribV):.invalid>
+
+      ^{fvInput attribV}
+      <label>
+        #{fvLabel attribV}
+        $if fvRequired attribV
+          <sup>*
+
+      $maybe err <- fvErrors attribV
+        <span.error>#{err}
+
+<div.field.label.suffix.border.round :isJust (fvErrors typeV):.invalid>
+  ^{fvInput typeV}
+  <label>
+    #{fvLabel typeV}
+    $if fvRequired typeV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors typeV
+    <span.error>#{err}
+
+<div.field.border.round.label.textarea :isJust (fvErrors htmlV):.invalid>
+  ^{fvInput htmlV}
+  <label>
+    #{fvLabel htmlV}
+    $if fvRequired htmlV
+      <sup>*
+  $maybe err <- fvErrors htmlV
+    <span.error>#{err}
+
+<div.field.label.suffix.border.round :isJust (fvErrors levelV):.invalid>
+  ^{fvInput levelV}
+  <label>
+    #{fvLabel levelV}
+    $if fvRequired levelV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors levelV
+    <span.error>#{err}
+
+<div.field.label.suffix.border.round :isJust (fvErrors langV):.invalid>
+  ^{fvInput langV}
+  <label>
+    #{fvLabel langV}
+    $if fvRequired langV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors langV
+    <span.error>#{err}
+
+<div.field.label.suffix.border.round :isJust (fvErrors countryV):.invalid>
+  ^{fvInput countryV}
+  <label>
+    #{fvLabel countryV}
+    $if fvRequired countryV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors countryV
+    <span.error>#{err}
+
+<button.magin :isJust (fvErrors colorV):.invalid>
+  $case header
+    $of Just (Entity _ (DocHeader _ _ _ _ _ _ (Just color) _))
+      <i ##{idIconPalette} style=color:#{color}>
+        palette
+    $of _
+      <i ##{idIconPalette}>
+        palette
+      
+  <span>
+    #{fvLabel colorV}
+    $if fvRequired colorV
+      <sup>*
+  ^{fvInput colorV}
+
+<button.magin :isJust (fvErrors bgColorV):.invalid>
+  $case header
+    $of Just (Entity _ (DocHeader _ _ _ _ _ _ _ (Just bg)))
+      <i ##{idIconPaletteBg} style=color:#{bg}>
+        palette
+    $of _
+      <i ##{idIconPaletteBg}>
+        palette
+      
+  <span>
+    #{fvLabel bgColorV}
+    $if fvRequired bgColorV
+      <sup>*
+  ^{fvInput bgColorV}
+
+    
+

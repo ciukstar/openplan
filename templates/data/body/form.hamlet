@@ -1,0 +1,30 @@
+
+#{extra} 
+
+<button.magin :isJust (fvErrors bgColorV):.invalid>
+  $case body
+    $of Just (Entity _ (DocBody _ (Just bg) _))
+      <i ##{idIconPalette} style=color:#{bg}>
+        palette
+    $of _
+      <i ##{idIconPalette}>
+        palette
+      
+  <span>
+    #{fvLabel bgColorV}
+    $if fvRequired bgColorV
+      <sup>*
+  ^{fvInput bgColorV}
+
+$maybe err <- fvErrors bgColorV
+  <span.error>#{err}
+
+<div.field.label.suffix.border.round :isJust (fvErrors layoutV):.invalid>
+  ^{fvInput layoutV}
+  <label>
+    #{fvLabel layoutV}
+    $if fvRequired layoutV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors layoutV
+    <span.error>#{err}

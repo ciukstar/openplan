@@ -1,0 +1,20 @@
+
+
+document.getElementById(#{fvId logoV}).addEventListener('change',function (e) {
+  if (this.files && this.files[0]) {
+    let fr = new FileReader();
+    fr.onload = function (e) {
+      document.getElementById(#{idImgPhoto}).setAttribute('src',e.target.result);
+    };
+    fr.readAsDataURL(this.files[0]);
+  }
+});
+
+
+[ [#{fvId colorV}, #{idIconPalette}],
+  [#{fvId bgColorV}, #{idIconPaletteBg}]
+].map(ps => ps.map(y => document.getElementById(y))).forEach(([x,y]) => {
+  x.addEventListener('change', function (e) {
+    y.style.color = e.target.value;
+  });
+});

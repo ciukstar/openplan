@@ -1,0 +1,28 @@
+
+^{widgetTopbar Nothing (msgr MsgAppName) idOverlay Nothing Nothing Nothing}
+
+<main.responsive>
+
+  $forall (Entity _ (Site name _ home),pages) <- pages
+    <article>
+      <details>
+        <summary.none>
+          <a.row.wave>
+            #{name} 
+            <span style="margin-left:auto">
+              (_{MsgNumberOfPages}: #{length pages})
+        $forall (Entity pid (Webpage sid title _),(headers,(bodies,footers))) <- pages
+          <a.row.wave href=@{PageR sid pid} target=_blank>
+            <div.max>
+              <div>
+                #{title}
+                $if ((headers + bodies) + footers) == 0
+                  <span style="float:inline-end;text-transform:lowercase">
+                    (_{MsgEmptyPage})
+                
+              <div>@{PageR sid pid}
+            $maybe hid <- home
+              $if hid == pid
+                <i>home
+
+^{widgetSnackbar msgs}

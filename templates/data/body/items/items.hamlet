@@ -1,0 +1,14 @@
+
+
+^{widgetTopbar (Just $ DataR $ BodyR sid pid) (msgr MsgItems) idOverlay Nothing Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <form method=post action=@{DataR $ BodyItemsR sid pid bid} enctype=#{et}>
+    ^{fw}
+    <nav.right-align.margin>
+      <a.button.round.transparent href=@{DataR $ BodyR sid pid} role=button>
+        _{MsgCancel}
+
+      <button.round.priary type=submit>
+        _{MsgSave}

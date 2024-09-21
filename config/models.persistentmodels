@@ -1,0 +1,100 @@
+-- By default this file is used by `persistFileWith` in Model.hs (which is imported by Foundation.hs)
+-- Syntax for this file here: https://github.com/yesodweb/persistent/blob/master/docs/Persistent-entity-syntax.md
+
+Product
+    item ItemId OnDeleteCascade
+    display DocBodyId OnDeleteCascade
+    UniqueProduct item display
+    
+
+ItemPhoto
+    item ItemId OnDeleteCascade
+    mime Text
+    photo ByteString
+    attribution Html Maybe
+    UniqueItemPhoto item
+
+Item
+    name Text
+    descr Textarea Maybe
+    price Double
+    currency Text
+    rating Int Maybe
+    link Text Maybe
+    
+
+DocFooter
+    page WebpageId OnDeleteCascade
+
+
+DocBody
+    page WebpageId OnDeleteCascade
+    bgColor Text Maybe
+    layout DisplayLayout Maybe
+    UniqueDocBody page
+
+
+Logo
+    header DocHeaderId OnDeleteCascade
+    mime Text
+    photo ByteString
+    attribution Html Maybe
+    UniqueLogo header
+
+
+DocHeader
+    page WebpageId OnDeleteCascade
+    contentsType ContentsType
+    contents Html Maybe
+    level HeadingLevel Maybe
+    lang Lang Maybe
+    country Text Maybe
+    color Text Maybe
+    bgColor Text Maybe
+    UniqueDocHeader page
+    
+
+Webpage
+    site SiteId OnDeleteCascade
+    title Text
+    bgColor Text Maybe
+    UniqueWebpage site title
+
+
+Favicon
+    site SiteId OnDeleteCascade
+    mime Text
+    photo ByteString
+    attribution Html Maybe
+    UniqueFavicon site
+
+
+Site
+    name Text
+    descr Textarea Maybe
+    home WebpageId Maybe OnDeleteSetNull
+    UniqueSite name
+
+Role
+    name Text
+    UniqueRole name
+
+UserPhoto
+    user UserId OnDeleteCascade
+    mime Text
+    photo ByteString
+    attribution Html Maybe
+    UniqueUserPhoto user
+
+User
+    email Text
+    password Text Maybe
+    admin Bool
+    UniqueUser email
+    deriving Typeable
+    
+Email
+    email Text
+    userId UserId Maybe
+    verkey Text Maybe
+    UniqueEmail email

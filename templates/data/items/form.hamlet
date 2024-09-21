@@ -1,0 +1,85 @@
+
+#{extra}
+
+<div ##{idPhotoContainer}>
+  <label for=#{fvId photoV} ##{idLabelPhoto}>
+    <figure.center-align ##{idFigurePhoto}>
+      $maybe Entity iid _ <- item
+        <img src=@{DataR $ ItemPhotoR iid} width=auto height=56 ##{idImgPhoto} loading=lazy alt=_{MsgPhoto}>
+      $nothing
+        <img src=@{StaticR img_category_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg} width=auto height=56
+             ##{idImgPhoto} loading=lazy alt=_{MsgPhoto}>
+      <figcaption>
+
+        $maybe errs <- fvErrors photoV
+          <div.error>
+            #{errs}
+
+        <button.small.border.round.transparent type=button onclick="document.getElementById('#{idLabelPhoto}').click()">
+          <i>upload_file
+          _{MsgPhoto}
+
+  ^{fvInput photoV}
+
+  <details.margin>
+    <summary>
+      #{fvLabel attribV}
+    <div.field.textarea.label.border.round :isJust (fvErrors attribV):.invalid>
+
+      ^{fvInput attribV}
+      <label>
+        #{fvLabel attribV}
+        $if fvRequired attribV
+          <sup>*
+
+      $maybe err <- fvErrors attribV
+        <span.error>#{err}
+
+
+$forall v <- [nameV, priceV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+
+
+$forall v <- [currencyV, ratingV]
+  <div.field.label.suffix.border.round :isJust (fvErrors v):.invalid>
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+    <i>arrow_drop_down
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+
+
+$forall v <- [linkV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+    
+      
+$forall v <- [descrV]
+  <div.field.textarea.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>#{err}

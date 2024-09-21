@@ -1,0 +1,69 @@
+
+
+$maybe (Entity _ (Webpage _ _ pageColor),(header,body)) <- page
+  $maybe Entity _ (DocHeader _ typ html level lang country color bg) <- header
+    <header.responsive :isJust color:style="color:#{fromMaybe "inherit" color};background-color:#{fromMaybe "inherit" bg}">
+      $maybe Entity _ (Logo hid _ _ _) <- logo
+        <figure>
+          <img src=@{DataR $ HeaderLogoR hid} alt=_{MsgLogo} height=56 width=auto loading=lazy>
+
+      $case typ
+        $of ContentsTypeHtml          
+          $maybe html <- html
+            ^{html}
+
+        $of ContentsTypeText
+          $maybe l <- level
+            $case l
+              $of HeadingLevelH1
+                <h1>
+                  $maybe html <- html
+                    ^{html}
+              $of HeadingLevelH2
+                <h2>
+                  $maybe html <- html
+                    ^{html}
+              $of HeadingLevelH3
+                <h3>
+                  $maybe html <- html
+                    ^{html}
+              $of HeadingLevelH4
+                <h4>
+                  $maybe html <- html
+                    ^{html}
+              $of HeadingLevelH5
+                <h5>
+                  $maybe html <- html
+                    ^{html}
+              $of HeadingLevelH6
+                <h6>
+                  $maybe html <- html
+                    ^{html}
+                  
+  $maybe Entity _ (DocBody _ bg layout) <- body
+    <main.responsive :isJust bg:style=background-color:#{fromMaybe "inherit" bg}>
+      $forall (Entity pid (Product _ _),Entity iid (Item name _ price currency rating link)) <- products
+        <a.row.padding.surface-container.wave :isJust link:href=#{fromMaybe "#" link} target=_blank
+          style="background-color:transparent !important">
+
+          <img.circle.extra src=@{DataR $ ItemPhotoR iid} alt=_{MsgPhoto}>
+
+          <div.max>
+            <h6.small>
+              #{name}
+              
+            <div.currency data-value=#{price} data-currency=#{currency}>
+              #{price} #{currency}
+              
+            <div>
+              $maybe r <- rating
+                #{T.replicate r "☆"}
+  
+          $maybe link <- link
+            <i>arrow_forward_ios
+
+        <hr>
+  
+  <footer>
+    insert footer here
+  

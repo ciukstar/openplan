@@ -1,0 +1,233 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           openplan
+version:        0.0.0
+category:       Application
+homepage:       https://github.com/ciukstar/openplan#readme
+bug-reports:    https://github.com/ciukstar/openplan/issues
+author:         Sergiu Starciuc <ciukstar@gmail.com>
+maintainer:     Sergiu Starciuc <ciukstar@gmail.com>
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/ciukstar/openplan
+
+flag dev
+  description: Turn on development settings, like auto-reload templates.
+  manual: False
+  default: False
+
+flag library-only
+  description: Build for use with "yesod devel"
+  manual: False
+  default: False
+
+library
+  exposed-modules:
+      Application
+      Demo.DemoEn
+      Demo.DemoRu
+      Foundation
+      Handler.Body
+      Handler.Common
+      Handler.Docs
+      Handler.Footer
+      Handler.Header
+      Handler.Home
+      Handler.Items
+      Handler.Sites
+      Handler.Users
+      Handler.Webpages
+      Import
+      Import.NoFoundation
+      Model
+      Settings
+      Settings.StaticFiles
+  other-modules:
+      Paths_openplan
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , case-insensitive
+    , classy-prelude
+    , classy-prelude-conduit
+    , classy-prelude-yesod
+    , conduit
+    , containers
+    , data-default
+    , directory
+    , email-validate
+    , esqueleto
+    , fast-logger
+    , file-embed
+    , foreign-store
+    , hjsmin
+    , http-client-tls
+    , http-conduit
+    , listsafe
+    , monad-control
+    , monad-logger
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , random
+    , safe
+    , shakespeare
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , vector
+    , wai
+    , wai-extra
+    , wai-logger
+    , warp
+    , yaml
+    , yesod
+    , yesod-auth
+    , yesod-auth-hashdb
+    , yesod-core
+    , yesod-form
+    , yesod-persistent
+    , yesod-static
+  default-language: Haskell2010
+  if (flag(dev)) || (flag(library-only))
+    ghc-options: -Wall -fwarn-tabs -O0
+    cpp-options: -DDEVELOPMENT
+  else
+    ghc-options: -Wall -fwarn-tabs -O2
+
+executable openplan
+  main-is: main.hs
+  other-modules:
+      DevelMain
+      Paths_openplan
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , case-insensitive
+    , classy-prelude
+    , classy-prelude-conduit
+    , classy-prelude-yesod
+    , conduit
+    , containers
+    , data-default
+    , directory
+    , email-validate
+    , esqueleto
+    , fast-logger
+    , file-embed
+    , foreign-store
+    , hjsmin
+    , http-client-tls
+    , http-conduit
+    , listsafe
+    , monad-control
+    , monad-logger
+    , openplan
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , random
+    , safe
+    , shakespeare
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , vector
+    , wai
+    , wai-extra
+    , wai-logger
+    , warp
+    , yaml
+    , yesod
+    , yesod-auth
+    , yesod-auth-hashdb
+    , yesod-core
+    , yesod-form
+    , yesod-persistent
+    , yesod-static
+  default-language: Haskell2010
+  if flag(library-only)
+    buildable: False
+
+test-suite openplan-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Handler.CommentSpec
+      Handler.CommonSpec
+      Handler.HomeSpec
+      Handler.ProfileSpec
+      TestImport
+      Paths_openplan
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , case-insensitive
+    , classy-prelude
+    , classy-prelude-conduit
+    , classy-prelude-yesod
+    , conduit
+    , containers
+    , data-default
+    , directory
+    , email-validate
+    , esqueleto
+    , fast-logger
+    , file-embed
+    , foreign-store
+    , hjsmin
+    , hspec >=2.0.0
+    , http-client-tls
+    , http-conduit
+    , listsafe
+    , microlens
+    , monad-control
+    , monad-logger
+    , openplan
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , random
+    , safe
+    , shakespeare
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , vector
+    , wai
+    , wai-extra
+    , wai-logger
+    , warp
+    , yaml
+    , yesod
+    , yesod-auth
+    , yesod-auth-hashdb
+    , yesod-core
+    , yesod-form
+    , yesod-persistent
+    , yesod-static
+    , yesod-test
+  default-language: Haskell2010

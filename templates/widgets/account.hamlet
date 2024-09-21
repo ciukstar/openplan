@@ -1,0 +1,20 @@
+
+
+$maybe Entity _ (User email _ _) <- user
+  <button.circle.transparent data-ui=#accountmenutrigger>
+    <i>account_circle
+    <menu.left.no-wrap #accountmenutrigger>
+      <a.row href=@{AuthR LogoutR}>
+        <i>logout</i>
+        <div class="max">
+          <div>_{MsgSignOut}
+          <label>#{email}
+    
+    
+$nothing
+  <a.button.s.small.circle href=@{AuthR LoginR} title=_{MsgSignIn}>
+    <i>login
+  <a.button.m.medium.circle href=@{AuthR LoginR} title=_{MsgSignIn}>
+    <i>login
+  <a.button.l.large.circle href=@{AuthR LoginR} title=_{MsgSignIn}>
+    <i>login
