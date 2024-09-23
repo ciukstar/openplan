@@ -11,43 +11,58 @@
 
   <div.page.active>
 
-    $maybe (Entity _ (Task _ _ name start end _ _),parent) <- task
+    $maybe ((Entity _ (Task _ _ name start end status _ _),Entity _ (Dept _ dname _)),parent) <- task
 
       <dl.margin>
       
         <dt>
-          <label.large>_{MsgName}
+          <label.bold.large-text>_{MsgSequence}
+        <dd.margin>
+          #{length tids + 1}
+      
+        <dt>
+          <label.bold.large-text>_{MsgName}
         <dd.margin>
           #{name}
 
         <dt>
-          <label.large>_{MsgStart}
+          <label.bold.large-text>_{MsgStart}
         <dd.margin>
           $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
             <time.daytime datetime=#{fmt start}>
               #{fmt start}
 
         <dt>
-          <label.large>_{MsgEnd}
+          <label.bold.large-text>_{MsgEnd}
         <dd.margin>
           $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
             <time.daytime datetime=#{fmt end}>
               #{fmt end}
       
         <dt>
-          <label.large>_{MsgStart}
+          <label.bold.large-text>_{MsgTaskStatus}
         <dd.margin>
-          #{show start}
+          $case status
+            $of TaskStatusNotStarted
+              _{MsgTaskStatusNotStarted}
+            $of TaskStatusInProgress
+              _{MsgTaskStatusInProgress}
+            $of TaskStatusCompleted
+              _{MsgTaskStatusCompleted}
+            $of TaskStatusUncompleted
+              _{MsgTaskStatusUncompleted}
+            $of TaskStatusPartiallyCompleted
+              _{MsgTaskStatusPartiallyCompleted}
       
         <dt>
-          <label.large>_{MsgEnd}
+          <label.bold.large-text>_{MsgDepartment}
         <dd.margin>
-          #{show end}
+          #{dname}
 
         <dt>
-          <label.large>_{MsgParentTask}
+          <label.bold.large-text>_{MsgParentTask}
         <dd.margin>
-          $maybe Entity _ (Task _ _ name _ _ _ _) <- parent
+          $maybe Entity _ (Task _ _ name _ _ _ _ _) <- parent
             #{name}
 
 ^{widgetSnackbar msgs}

@@ -1,3 +1,11 @@
+Sequence: Sequence
+TaskStatus: Status
+TaskStatusPartiallyCompleted: Partially completed
+TaskStatusUncompleted: Uncompleted
+TaskStatusCompleted: Completed
+TaskStatusInProgress: In progress
+TaskStatusNotStarted: Not started
+TaskStatusNew: New
 ParentTask: Parent task
 NoSubtasksYet: There are no subtasks yet
 NoTasksForThisProjectYet: There are no tasks for this project yet

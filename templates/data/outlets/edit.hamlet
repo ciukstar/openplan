@@ -5,7 +5,7 @@
 
   <form.margin method=post action=@{DataR $ OutletR oid} enctype=#{et} novalidate>
     ^{fw}
-    <nav.right-align.no-space>
+    <nav.right-align>
       <a.button.transparent href=@{DataR $ OutletR oid}>
         _{MsgCancel}
       <button.primary type=submit>

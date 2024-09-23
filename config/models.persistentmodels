@@ -9,6 +9,7 @@ Task
     name Text
     start UTCTime
     end UTCTime
+    status TaskStatus
     duration NominalDiffTime Maybe
     parent TaskId Maybe OnDeleteCascade
 
@@ -27,6 +28,13 @@ Outlet sql=point_type
     name Text
     descr Textarea Maybe
     UniquePointType name    
+
+
+Empl sql=employee
+    user UserId OnDeleteCascade
+    dept DeptId OnDeleteCascade
+    position Text
+    appointment UTCTime sql=date_appointment
 
 
 Role

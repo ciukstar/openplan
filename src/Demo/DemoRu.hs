@@ -18,7 +18,12 @@ import Model
     , UserPhoto (UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
     , Dept (Dept, deptCode, deptName, deptParent)
     , Outlet (Outlet, outletName, outletDescr)
-    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd), Task (Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskParent)
+    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd)
+    , Task
+      ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration
+      , taskParent, taskStatus
+      )
+    , TaskStatus (TaskStatusInProgress)
     )
     
 import Text.Hamlet (shamlet)
@@ -140,6 +145,7 @@ fillDemoRu = do
                       , taskName = "Задача №010000000"
                       , taskStart = prjStart prj1
                       , taskEnd = addUTCTime oneDayTime (prjStart prj1)
+                      , taskStatus = TaskStatusInProgress
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       }
@@ -151,6 +157,7 @@ fillDemoRu = do
                        , taskName = "Задача №011000000"
                        , taskStart = taskEnd task11
                        , taskEnd = addUTCTime (2 * oneDayTime) (taskEnd task11)
+                       , taskStatus = TaskStatusInProgress
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t11
                        }
@@ -161,6 +168,7 @@ fillDemoRu = do
                         , taskName = "Задача №011100000"
                         , taskStart = taskEnd task111
                         , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task111)
+                        , taskStatus = TaskStatusInProgress
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
                         }
@@ -171,6 +179,7 @@ fillDemoRu = do
                          , taskName = "Задача №011100000"
                          , taskStart = taskEnd task1111
                          , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task1111)
+                         , taskStatus = TaskStatusInProgress
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t1111
                          }
@@ -192,6 +201,7 @@ fillDemoRu = do
                       , taskName = "Задача №020000000"
                       , taskStart = prjStart prj2
                       , taskEnd = addUTCTime oneDayTime (prjStart prj2)
+                      , taskStatus = TaskStatusInProgress
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       }
@@ -203,6 +213,7 @@ fillDemoRu = do
                        , taskName = "Задача №021000000"
                        , taskStart = taskEnd task21
                        , taskEnd = addUTCTime (2 * oneDayTime) (taskEnd task21)
+                       , taskStatus = TaskStatusInProgress
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t21
                        }
@@ -213,6 +224,7 @@ fillDemoRu = do
                         , taskName = "Задача №021100000"
                         , taskStart = taskEnd task211
                         , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task211)
+                        , taskStatus = TaskStatusInProgress
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t211
                         }
@@ -223,6 +235,7 @@ fillDemoRu = do
                          , taskName = "Задача №021100000"
                          , taskStart = taskEnd task2111
                          , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task2111)
+                         , taskStatus = TaskStatusInProgress
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t2111
                          }

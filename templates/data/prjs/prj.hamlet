@@ -14,34 +14,34 @@
     $maybe (Entity _ (Prj _ code name location start end),Entity _ (Outlet oname _)) <- prj
       <dl.margin>
         <dt>
-          <label.large>_{MsgCode}
+          <label.bold.large-text>_{MsgCode}
         <dd.margin>
           #{code}
 
         <dt>
-          <label.large>_{MsgName}
+          <label.bold.large-text>_{MsgName}
         <dd.margin>
           #{name}
 
         <dt>
-          <label.large>_{MsgLocation}
+          <label.bold.large-text>_{MsgLocation}
         <dd.margin>
           #{location}
 
         <dt>
-          <label.large>_{MsgOutletType}
+          <label.bold.large-text>_{MsgOutletType}
         <dd.margin>
           #{oname}
 
         <dt>
-          <label.large>_{MsgProjectStart}
+          <label.bold.large-text>_{MsgProjectStart}
         <dd.margin>
           $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
             <time.daytime datetime=#{fmt start}>
               #{fmt start}
 
         <dt>
-          <label.large>_{MsgProjectEnd}
+          <label.bold.large-text>_{MsgProjectEnd}
         <dd.margin>
           $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
             <time.daytime datetime=#{fmt end}>

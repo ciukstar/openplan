@@ -14,6 +14,17 @@ $forall v <- [nameV,startV,endV]
       <span.error>#{err}
 
 
+<div.field.label.suffix.border.round :isJust (fvErrors statusV):.invalid>
+  ^{fvInput statusV}
+  <label>
+    #{fvLabel statusV}
+    $if fvRequired statusV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors statusV
+    <span.error>#{err}
+
+
 <div.field.label.suffix.border.round :isJust (fvErrors deptV):.invalid>
   ^{fvInput deptV}
   <label>

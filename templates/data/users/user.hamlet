@@ -8,18 +8,18 @@
   $maybe Entity _ (User email _ uname admin) <- user
     <dl.margin>
       <dt>
-        <label.large>_{MsgName}
+        <label.bold.large-text>_{MsgName}
       <dd.margin>
         $maybe name <- uname
           #{name}
         
       <dt>
-        <label.large>_{MsgEmail}
+        <label.bold.large-text>_{MsgEmail}
       <dd.margin>
         #{email}
         
       <dt>
-        <label.large>_{MsgAdministrator}
+        <label.bold.large-text>_{MsgAdministrator}
       <dd.margin>
         $if admin
           _{MsgYes}

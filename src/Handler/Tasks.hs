@@ -21,7 +21,7 @@ import Data.Text (Text, pack)
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&))
-    , isNothing_, Value (unValue), leftJoin, on, just
+    , isNothing_, Value (unValue), innerJoin, leftJoin, on, just
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey)
@@ -37,14 +37,22 @@ import Foundation
       , MsgRecordDeleted, MsgPleaseAddIfNecessary
       , MsgRecordEdited, MsgSubtasks, MsgNoTasksForThisProjectYet
       , MsgParentTask, MsgStart, MsgEnd, MsgDepartment, MsgProject
+      , MsgTaskStatusNotStarted, MsgTaskStatusCompleted, MsgTaskStatusInProgress
+      , MsgTaskStatusUncompleted, MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgSequence
       )
     )
 
 import Model
     ( msgSuccess, msgError, Tasks (Tasks)
-    , PrjId, Dept
-    , TaskId, Task(Task, taskName, taskParent, taskStart, taskEnd, taskDept)
-    , EntityField (TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId)
+    , PrjId, Dept (Dept)
+    , TaskId, Task(Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus)
+    , TaskStatus
+      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
+      , TaskStatusUncompleted, TaskStatusPartiallyCompleted
+      )
+    , EntityField
+      ( TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId, TaskDept
+      )
     )
 
 import Settings (widgetFile)
@@ -142,12 +150,18 @@ formDepartment prjId did task extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . taskEnd . entityVal <$> task)
 
-    taskOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
+    (statusR,statusV) <- mreq (selectField (optionsPairs statusOptions)) FieldSettings
+        { fsLabel = SomeMessage MsgTaskStatus
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+        , fsAttrs = []
+        } (taskStatus . entityVal <$> task)
+
+    parentOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Task
         orderBy [asc (x ^. TaskName)]
         return (x ^. TaskName, x ^. TaskId) )
 
-    (parentR,parentV) <- mopt (selectField (optionsPairs taskOptions)) FieldSettings
+    (parentR,parentV) <- mopt (selectField (optionsPairs parentOptions)) FieldSettings
         { fsLabel = SomeMessage MsgParentTask
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
         , fsAttrs = []
@@ -156,7 +170,7 @@ formDepartment prjId did task extra = do
     let r = Task prjId <$> deptR<*> nameR 
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
-            <*> pure Nothing <*> parentR
+            <*> statusR <*> pure Nothing <*> parentR
 
     let w = $(widgetFile "data/tasks/form")
     return (r,w)
@@ -167,7 +181,7 @@ formDepartment prjId did task extra = do
       uniqueName :: Text -> Handler (Either AppMessage Text)
       uniqueName name = do
           x <- runDB $ selectOne $ do
-              x <- from $ table @Task
+              x <- from $ table @Task 
               where_ $ x ^. TaskName ==. val name
               where_ $ x ^. TaskPrj ==. val prjId
               return x
@@ -177,6 +191,13 @@ formDepartment prjId did task extra = do
               Nothing -> Left MsgAlreadyExists
               Just (Entity tid'' _) | tid' == tid'' -> Right name
                                     | otherwise -> Left MsgAlreadyExists
+
+      statusOptions = [ (MsgTaskStatusNotStarted,TaskStatusNotStarted)
+                      , (MsgTaskStatusInProgress,TaskStatusInProgress)
+                      , (MsgTaskStatusCompleted,TaskStatusCompleted)
+                      , (MsgTaskStatusUncompleted,TaskStatusUncompleted)
+                      , (MsgTaskStatusPartiallyCompleted,TaskStatusPartiallyCompleted)
+                      ]
 
 
 postTaskR :: PrjId -> TaskId -> Tasks -> Handler Html
@@ -210,11 +231,12 @@ getTaskR prjId tid ps@(Tasks tids) = do
     let open = ("o",) . pack . show . fromSqlKey <$> tid : tids
     
     task <- runDB $ selectOne $ do
-        x :& p <- from $ table @Task
-            `leftJoin` table @Task `on` (\(x :& p) -> x ^. TaskParent ==. p ?. TaskId)
+        x :& d :& p <- from $ table @Task
+            `innerJoin` table @Dept `on` (\(x :& d) -> x ^. TaskDept ==. d ^. DeptId)
+            `leftJoin` table @Task `on` (\(x :& _ :& p) -> x ^. TaskParent ==. p ?. TaskId)
         where_ $ x ^. TaskId ==. val tid
         where_ $ x ^. TaskPrj ==. val prjId
-        return (x, p)
+        return ((x,d), p)
 
     (fw0,et0) <- generateFormPost formTaskDelete
 
@@ -279,7 +301,7 @@ getTasksR prjId ps@(Tasks tids) = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgTasks
+        setTitleI MsgTasks 
         idOverlay <- newIdent
         $(widgetFile "data/tasks/subtasks")
 
@@ -291,18 +313,37 @@ buildSnippet :: PrjId -> [Text] -> Maybe TaskId -> Tasks -> TaskTree -> Widget
 buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
     [whamlet|
       <div>
-        $forall (Entity tid (Task _ _ name start end _ _),trees@(TaskTree subtasks)) <- trees
+        $forall (Entity tid (Task _ _ name start end status _ _),trees@(TaskTree subtasks)) <- trees
           $with (pid,level) <- (pack $ show $ fromSqlKey tid,length tids + 1)
             $if (length subtasks) > 0
               <hr>
               <details #details#{pid} open
-                ontoggle="this.querySelector('summary i.expand').textContent = this.open ? 'collapse_all' : 'expand_all'"">
+                ontoggle="this.querySelector('summary i.expand').textContent = this.open ? 'collapse_all' : 'expand_all'">
                 <summary.row.surface-container>
-                  <i.expand.padding.circle.border.wave style="margin-left:#{level}rem">
-                    expand_all
+                  <div>
+                    <i.expand.padding.circle.border.wave style="margin-left:#{level}rem">
+                      expand_all
+                    <div.badge.primary style="inset: 0 -1rem auto auto">
+                      #{level}
+                    
                   <a.row.max.padding.wave href=@{DataR $ TaskR prjId tid ps}>
                     <div.max>
-                      <h6.small>#{name}
+                      <h6.small>
+                        #{name}
+                        
+                      <div.bold>
+                        $case status
+                          $of TaskStatusNotStarted
+                            _{MsgTaskStatusNotStarted}
+                          $of TaskStatusInProgress
+                            _{MsgTaskStatusInProgress}
+                          $of TaskStatusCompleted
+                            _{MsgTaskStatusCompleted}
+                          $of TaskStatusUncompleted
+                            _{MsgTaskStatusUncompleted}
+                          $of TaskStatusPartiallyCompleted
+                            _{MsgTaskStatusPartiallyCompleted}
+                        
                       <label>
                         $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
                           <div>
@@ -318,20 +359,41 @@ buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
 
             $else
               <hr>
-              <a.row.max.padding.surface-container.wave href=@{DataR $ TaskR prjId tid ps}>
-                <i.expand.padding>
-                <div.max>
-                  <h6.small>#{name}
-                  <label>
-                    $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-                      <div>
-                          <time.daytime datetime=#{fmt start}>
-                            #{fmt start}
-                      <div>
-                        <time.daytime datetime=#{fmt end}>
-                          #{fmt end}
-                            
-                <i>arrow_forward_ios
+              <div.row.surface-container>
+
+                <div>
+                  <div.padding style="margin-left:#{level}rem">
+                  <div.badge.primary style="inset: 0 -1rem auto auto">
+                    #{level}
+                      
+                <a.row.max.padding.surface-container.wave href=@{DataR $ TaskR prjId tid ps}>
+                  <div.max>
+                    <h6.small>
+                      #{name}
+
+                    <div.bold>
+                      $case status
+                        $of TaskStatusNotStarted
+                          _{MsgTaskStatusNotStarted}
+                        $of TaskStatusInProgress
+                          _{MsgTaskStatusInProgress}
+                        $of TaskStatusCompleted
+                          _{MsgTaskStatusCompleted}
+                        $of TaskStatusUncompleted
+                          _{MsgTaskStatusUncompleted}
+                        $of TaskStatusPartiallyCompleted
+                          _{MsgTaskStatusPartiallyCompleted}
+
+                    <label>
+                      $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+                        <div>
+                            <time.daytime datetime=#{fmt start}>
+                              #{fmt start}
+                        <div>
+                          <time.daytime datetime=#{fmt end}>
+                            #{fmt end}
+
+                  <i>arrow_forward_ios
             |]
 
 

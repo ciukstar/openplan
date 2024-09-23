@@ -1,3 +1,11 @@
+Sequence: Последовательностьx
+TaskStatus: Статус
+TaskStatusPartiallyCompleted: Частично выполнено
+TaskStatusUncompleted: Невыполнено
+TaskStatusCompleted: Выполнено
+TaskStatusInProgress: Выполняется
+TaskStatusNotStarted: Не запущено
+TaskStatusNew: Новое
 ParentTask: Родительская задача
 NoSubtasksYet: Подзадач пока нет
 NoTasksForThisProjectYet: Для этого проекта пока нет задач

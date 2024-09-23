@@ -31,6 +31,7 @@ import Data.Function ((.))
 import Data.Functor ((<$>))
 import Data.Maybe (Maybe (Just))
 import qualified Data.Proxy as DP (Proxy)
+import Data.Ord (Ord)
 import Data.Text (pack, unpack)
 import Data.Time.Clock
     ( UTCTime, NominalDiffTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
@@ -42,6 +43,7 @@ import Database.Persist
 import Database.Persist.Quasi ( lowerCaseSettings )
 import Database.Persist.Sql (fromSqlKey, toSqlKey, PersistFieldSql, SqlType, sqlType)
 import Database.Persist.Types (SqlType (SqlInt64))
+import Database.Persist.TH (derivePersistField)
 
 import Prelude (fromIntegral, truncate)
 
@@ -52,6 +54,14 @@ import Text.Show (Show, show)
 import Yesod.Auth.HashDB (HashDBUser (userPasswordHash, setPasswordHash))
 import Yesod.Core.Dispatch (PathMultiPiece, toPathMultiPiece, fromPathMultiPiece)
 import Yesod.Form (Textarea)
+
+
+data TaskStatus = TaskStatusNotStarted | TaskStatusInProgress
+                | TaskStatusCompleted
+                | TaskStatusUncompleted
+                | TaskStatusPartiallyCompleted
+    deriving (Show, Read, Eq, Ord)
+derivePersistField "TaskStatus"
 
 
 instance PersistField NominalDiffTime where

@@ -16,11 +16,26 @@
           <p>_{MsgPleaseAddIfNecessary}.
           
     $else
-      $forall Entity tid (Task _ _ name start end _ _) <- tasks
+      $forall Entity tid (Task _ _ name start end status _ _) <- tasks
         <a.row.padding.surface-container.wave href=@{DataR $ TaskR prjId tid ps}>
 
           <div.max>
-            <h6.small>#{name}
+            <h6.small>
+              #{name}
+
+            <div.bold>
+              $case status
+                $of TaskStatusNotStarted
+                  _{MsgTaskStatusNotStarted}
+                $of TaskStatusInProgress
+                  _{MsgTaskStatusInProgress}
+                $of TaskStatusCompleted
+                  _{MsgTaskStatusCompleted}
+                $of TaskStatusUncompleted
+                  _{MsgTaskStatusUncompleted}
+                $of TaskStatusPartiallyCompleted
+                  _{MsgTaskStatusPartiallyCompleted}
+                            
             <label>
               $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
                 <div>

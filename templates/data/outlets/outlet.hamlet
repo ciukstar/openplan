@@ -5,25 +5,19 @@
 
 <main.responsive.no-padding>
 
-  <div.tabs>
-    <a.active href=@{DataR $ OutletR oid}>_{MsgProperties}
-    <a href=#>_{MsgTasks}
+  $maybe Entity _ (Outlet name descr) <- outlet
+    <dl.margin>
 
-  <div.page.active>
+      <dt>
+        <label.bold.large-text>_{MsgName}
+      <dd.margin>
+        #{name}
 
-    $maybe Entity _ (Outlet name descr) <- outlet
-      <dl.margin>
-
-        <dt>
-          <label.large>_{MsgName}
-        <dd.margin>
-          #{name}
-
-        <dt>
-          <label.large>_{MsgDescription}
-        <dd.margin>
-          $maybe descr <- descr
-            #{descr}
+      <dt>
+        <label.bold.large-text>_{MsgDescription}
+      <dd.margin>
+        $maybe descr <- descr
+          #{descr}
             
 
 ^{widgetSnackbar msgs}
