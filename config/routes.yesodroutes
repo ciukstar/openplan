@@ -2,9 +2,6 @@
 -- Syntax for this file here: https://www.yesodweb.com/book/routing-and-handlers
 
 
-/sites/#SiteId/wepages/#WebpageId PageR     GET
-/sites/#SiteId                    SiteHomeR GET
-
 / HomeR GET
 
 /docs DocsR GET
@@ -20,42 +17,40 @@
 
 
 /data DataR:
+    
 
-    /sites/#SiteId/pages/#WebpageId/body/#DocBodyId/items BodyItemsR GET POST
+    /prjs/#PrjId/dele/tasks/#TaskId/+Tasks TaskDeleR POST
+    /prjs/#PrjId/edit/tasks/#TaskId/+Tasks TaskEditR GET
+    /prjs/#PrjId/form/tasks/new/+Tasks     TaskNewR  GET
+    /prjs/#PrjId/task/#TaskId/+Tasks       TaskR     GET POST
+    /prjs/#PrjId/tasks/+Tasks              TasksR    GET POST
 
-    /sites/#SiteId/pages/#WebpageId/body BodyR GET POST
 
-    /sites/#SiteId/pages/#WebpageId/header HeaderR GET POST
+    /prjs/#PrjId/dele PrjDeleR POST
+    /prjs/#PrjId/edit PrjEditR GET
+    /prjs/new/form    PrjNewR  GET
+    /prjs/#PrjId      PrjR     GET POST
+    /prjs             PrjsR    GET POST
 
-    /headers/#DocHeaderId/logo HeaderLogoR GET
 
-    /sites/#SiteId/pages/#WebpageId/dele WebpageDeleR POST
-    /sites/#SiteId/pages/#WebpageId/edit WebpageEditR GET
-    /sites/#SiteId/pages/new/form        WebpageNewR  GET
-    /sites/#SiteId/pages/#WebpageId      WebpageR     GET POST
-    /sites/#SiteId/pages                 WebpagesR    GET POST
+    /outlets/#OutletId/dele OutletDeleR POST
+    /outlets/#OutletId/edit OutletEditR GET
+    /outlets/new/form       OutletNewR  GET
+    /outlets/#OutletId      OutletR     GET POST
+    /outlets                OutletsR    GET POST
 
-    /sites/#SiteId/dele SiteDeleR POST
-    /sites/#SiteId/edit SiteEditR GET
-    /sites/new/form     SiteNewR  GET
-    /sites/#SiteId      SiteR     GET POST
-    /sites              SitesR    GET POST
+    
 
-    /sites/#SiteId/favicon SiteFaviconR GET
-
-    /items/#ItemId/dele ItemDeleR POST
-    /items/#ItemId/edit ItemEditR GET
-    /items/new/form     ItemNewR  GET
-    /items/#ItemId      ItemR     GET POST
-    /items              ItemsR    GET POST
-
-    /items/#ItemId/photo ItemPhotoR GET
-
+    /dele/depts/#DeptId/+Depts DeptDeleR POST
+    /edit/depts/#DeptId/+Depts DeptEditR GET
+    /form/depts/new/+Depts     DeptNewR  GET
+    /dept/#DeptId/+Depts       DeptR     GET POST
+    /depts/+Depts              DeptsR    GET POST
 
     /users/#UserId/dele UserDeleR POST
     /users/#UserId/edit UserEditR GET
     /users/new/form     UserNewR  GET
     /users/#UserId      UserR     GET POST
-    /users              UsersR    GET
+    /users              UsersR    GET POST
 
     /users/#UserId/photo UserPhotoR GET

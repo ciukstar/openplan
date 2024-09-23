@@ -1,0 +1,12 @@
+
+^{widgetTopbar Nothing (msgr MsgDepartments) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  ^{buildSnippet open Nothing (Depts []) trees}
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR $ DeptNewR ps}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

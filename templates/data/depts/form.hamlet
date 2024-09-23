@@ -1,0 +1,25 @@
+
+#{extra}
+
+$forall v <- [codeV, nameV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+
+
+<div.field.label.suffix.border.round :isJust (fvErrors parentV):.invalid>
+  ^{fvInput parentV}
+  <label>
+    #{fvLabel parentV}
+    $if fvRequired parentV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors parentV
+    <span.error>#{err}

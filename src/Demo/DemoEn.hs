@@ -7,37 +7,31 @@ module Demo.DemoEn (fillDemoEn) where
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Trans.Reader (ReaderT)
 
+import qualified Data.ByteString as BS
+import Data.Time.Clock (getCurrentTime, addUTCTime)
+
 import Database.Persist (PersistStoreWrite (insert, insert_))
 import Database.Persist.SqlBackend (SqlBackend)
 
 import Model
-    ( Role(Role)
-    , User (User, userEmail, userPassword, userAdmin)
-    , Site (Site, siteName, siteDescr, siteHome)
-    , Webpage (Webpage, webpageTitle, webpageBgColor, webpageSite)
-    , Item (itemName, itemDescr, itemPrice, itemCurrency, itemRating, itemLink, Item)
-    , ItemPhoto (itemPhotoItem, ItemPhoto, itemPhotoMime, itemPhotoPhoto, itemPhotoAttribution)
-    , DocHeader
-      ( DocHeader, docHeaderPage, docHeaderContentsType, docHeaderContents
-      , docHeaderLevel, docHeaderLang, docHeaderCountry, docHeaderColor, docHeaderBgColor
-      )
-    , ContentsType (ContentsTypeText)
-    , HeadingLevel (HeadingLevelH1)
-    , DocBody (DocBody, docBodyPage, docBodyBgColor, docBodyLayout)
-    , DisplayLayout (DisplayLayoutTable)
-    , Product (Product, productDisplay, productItem)
-    , Logo (Logo, logoHeader, logoPhoto, logoMime, logoAttribution)
-    , Favicon (Favicon, faviconSite, faviconMime, faviconPhoto, faviconAttribution), UserPhoto (UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
+    ( User (User, userEmail, userPassword, userAdmin, userName)
+    , UserPhoto (UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
+    , Dept (Dept, deptCode, deptName, deptParent)
+    , Outlet (Outlet, outletName, outletDescr)
+    , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd), Task (Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskParent)
     )
     
 import Text.Hamlet (shamlet)
 
 import Yesod.Auth.Email (saltPass)
-import qualified Data.ByteString as BS
 
 
 fillDemoEn :: MonadIO m => ReaderT SqlBackend m ()
 fillDemoEn = do
+
+    now <- liftIO getCurrentTime
+
+    let oneDayTime = 24 * 60 * 60
 
     let freepik = [shamlet|
                           Designed by #
@@ -48,6 +42,7 @@ fillDemoEn = do
     pass1 <- liftIO $ saltPass "marylopez"
     uid1 <- insert $ User { userEmail = "marylopez@xmail.edu"
                           , userPassword = Just pass1
+                          , userName = Just "Mary Lopez"
                           , userAdmin = True
                           }
 
@@ -61,6 +56,7 @@ fillDemoEn = do
     pass2 <- liftIO $ saltPass "jjohnson"
     uid2 <- insert $ User { userEmail = "jjohnson@xmail.edu"
                           , userPassword = Just pass2
+                          , userName = Just "John Johnson"
                           , userAdmin = False
                           }
 
@@ -74,6 +70,7 @@ fillDemoEn = do
     pass3 <- liftIO $ saltPass "jmaulsby"
     uid3 <- insert $ User { userEmail = "jmaulsby@xmail.edu"
                           , userPassword = Just pass3
+                          , userName = Just "Julian Maulsby"
                           , userAdmin = False
                           }
 
@@ -84,97 +81,156 @@ fillDemoEn = do
                         , userPhotoAttribution = Just freepik
                         }
 
-            
+    dept1 <- insert Dept { deptCode = "Repairs"
+                         , deptName = "Repairs"
+                         , deptParent = Nothing
+                         }
 
-    item1 <- insert $ Item { itemName = "Boots"
-                           , itemDescr = Nothing
-                           , itemPrice = 10
-                           , itemCurrency = "usd"
-                           , itemRating = Just 5
-                           , itemLink = Just "https://www.google.com/search?q=boots&newwindow=1&sca_esv=d0c9352aa5174606&sca_upv=1&udm=2&sxsrf=ADLYWIKsKqVyh8lU5t_ZkIz6OfvOuHw2LQ:1726700988986&source=lnms&fbs=AEQNm0BNfNUooeQ9zNOHfD5dM-cuenhkgmBhnYUHrz76pe-e8wZDv0RMPHSRkHCNsZbIP5HzHYUD1XUTm-HLqxdFxra0L7ZkGto12nYXFok_FFPnEp1mJMBgsJboGp1vcvDK6HJsWCHzVgb0MD9onKVKCLcfkz3j3O3efOUHtwoipmPXsfidnf4&sa=X&ved=2ahUKEwiVrNO4zs2IAxWPRPEDHZlLAT0Q_AUoAnoECAQQBA&biw=1536&bih=744&dpr=1.25"
-                           }
-             
-    liftIO (BS.readFile "demo/item_1.avif") >>= \bs ->
-      insert_ ItemPhoto { itemPhotoItem = item1
-                        , itemPhotoMime = "image/avif"
-                        , itemPhotoPhoto = bs
-                        , itemPhotoAttribution = Just freepik
-                        }
-
-    item2 <- insert $ Item { itemName = "Shirts"
-                           , itemDescr = Nothing
-                           , itemPrice = 20.89
-                           , itemCurrency = "usd"
-                           , itemRating = Just 5
-                           , itemLink = Just "https://www.google.com/search?q=shirts&newwindow=1&sca_esv=d0c9352aa5174606&sca_upv=1&udm=2&biw=1536&bih=744&sxsrf=ADLYWILaj7Jh_HmBRUhl2wy96h7y86EOHQ%3A1726700991047&ei=v13rZsPJAruQxc8PieXGwAg&ved=0ahUKEwiDpdG5zs2IAxU7SPEDHYmyEYgQ4dUDCBA&uact=5&oq=shirts&gs_lp=Egxnd3Mtd2l6LXNlcnAiBnNoaXJ0czIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIgiZQwA5YtR1wAXgAkAEAmAFioAGzBKoBATa4AQPIAQD4AQGYAgegApIFwgIEECMYJ8ICChAAGIAEGEMYigWYAwCIBgGSBwMxLjagB7Ae&sclient=gws-wiz-serp"
-                           }
-             
-    liftIO (BS.readFile "demo/item_2.avif") >>= \bs ->
-      insert_ ItemPhoto { itemPhotoItem = item2
-                        , itemPhotoMime = "image/avif"
-                        , itemPhotoPhoto = bs
-                        , itemPhotoAttribution = Just freepik
-                        }
-
-
-    sid1 <- insert $ Site { siteName = "Site #1"
-                          , siteDescr = Nothing
-                          , siteHome = Nothing
+    dept11 <- insert Dept { deptCode = "RO 1"
+                          , deptName = "Office #1"
+                          , deptParent = Just dept1
                           }
-             
-    liftIO (BS.readFile "demo/favicon_1.ico") >>= \bs ->
-      insert_ Favicon { faviconSite = sid1
-                      , faviconMime = "image/x-icon"
-                      , faviconPhoto = bs
-                      , faviconAttribution = Nothing
+
+    dept12 <- insert Dept { deptCode = "RO 2"
+                          , deptName = "Office #2"
+                          , deptParent = Just dept1
+                          }
+
+    dept2 <- insert Dept { deptCode = "IT"
+                         , deptName = "Information Technologies"
+                         , deptParent = Nothing
+                         }
+
+    dept21 <- insert Dept { deptCode = "IT o1"
+                          , deptName = "Office #1"
+                          , deptParent = Just dept2
+                          }
+
+    dept22 <- insert Dept { deptCode = "IT o2"
+                          , deptName = "Office #2"
+                          , deptParent = Just dept2
+                          }
+
+    pt1 <- insert Outlet { outletName = "Point Type #1"
+                         , outletDescr = Just "The Point Type #1"
+                         }
+
+    pt2 <- insert Outlet { outletName = "Point Type #2"
+                         , outletDescr = Just "The Point Type #2"
+                         }
+
+    pt3 <- insert Outlet { outletName = "Point Type #3"
+                         , outletDescr = Just "The Point Type #3"
+                         }
+
+    let prj1 = Prj { prjOutlet = pt1
+                   , prjCode = "P001"
+                   , prjName = "Project #01"
+                   , prjLocation = "1485 NW Street St Wilson WY 83014"
+                   , prjStart = addUTCTime ((-30) * oneDayTime) now
+                   , prjEnd = addUTCTime (40 * oneDayTime) now
+                   }
+               
+    p1 <- insert prj1
+
+    let task11 = Task { taskPrj = p1
+                      , taskDept = dept1
+                      , taskName = "Task #010000000"
+                      , taskStart = prjStart prj1
+                      , taskEnd = addUTCTime oneDayTime (prjStart prj1)
+                      , taskDuration = Just oneDayTime
+                      , taskParent = Nothing
                       }
+                 
+    t11 <- insert task11
 
-    sid2 <- insert $ Site { siteName = "Site #2"
-                          , siteDescr = Nothing
-                          , siteHome = Nothing
-                          }
-
-
-    pid11 <- insert $ Webpage { webpageSite = sid1
-                              , webpageTitle = "Sales #1"
-                              , webpageBgColor = Just "#0000ff"
-                              }
-
-    h111 <- insert $ DocHeader { docHeaderPage = pid11
-                               , docHeaderContentsType = ContentsTypeText
-                               , docHeaderContents = Just "Marketplace #1"
-                               , docHeaderLevel = Just HeadingLevelH1
-                               , docHeaderLang = Just "en"
-                               , docHeaderCountry = Just "US"
-                               , docHeaderColor = Just "#ff0000"
-                               , docHeaderBgColor = Just "#FFEA00"
-                               }
-
-    liftIO (BS.readFile "demo/local_convenience_store_24dp_013048_FILL0_wght400_GRAD0_opsz24.svg") >>= \bs ->
-        insert_ $ Logo { logoHeader = h111
-                       , logoPhoto = bs
-                       , logoMime = "image/svg+xml"
-                       , logoAttribution = Nothing
+    let task111 = Task { taskPrj = p1
+                       , taskDept = dept1
+                       , taskName = "Task #011000000"
+                       , taskStart = taskEnd task11
+                       , taskEnd = addUTCTime (2 * oneDayTime) (taskEnd task11)
+                       , taskDuration = Just (2 * oneDayTime)
+                       , taskParent = Just t11
                        }
+    t111 <- insert task111
 
-    b111 <- insert $ DocBody { docBodyPage = pid11
-                             , docBodyBgColor = Just "white"
-                             , docBodyLayout = Just DisplayLayoutTable
-                             }
+    let task1111 = Task { taskPrj = p1
+                        , taskDept = dept1
+                        , taskName = "Task #011100000"
+                        , taskStart = taskEnd task111
+                        , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task111)
+                        , taskDuration = Just (3 * oneDayTime)
+                        , taskParent = Just t111
+                        }
+    t1111 <- insert task1111
 
-    insert_ $ Product { productItem = item1
-                      , productDisplay = b111
+    let task11111 = Task { taskPrj = p1
+                         , taskDept = dept1
+                         , taskName = "Task #011100000"
+                         , taskStart = taskEnd task1111
+                         , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task1111)
+                         , taskDuration = Just (3 * oneDayTime)
+                         , taskParent = Just t1111
+                         }
+    t11111 <- insert task11111
+
+    let prj2 = Prj { prjOutlet = pt2
+                   , prjCode = "P002"
+                   , prjName = "Project #002"
+                   , prjLocation = "102 W E ST Elkton VA 22827"
+                   , prjStart = addUTCTime ((-40) * oneDayTime) now
+                   , prjEnd = addUTCTime (50 * oneDayTime) now
+                   }
+
+    p2 <- insert prj2
+
+    let task21 = Task { taskPrj = p2
+                      , taskDept = dept1
+                      , taskName = "Task #020000000"
+                      , taskStart = prjStart prj2
+                      , taskEnd = addUTCTime oneDayTime (prjStart prj2)
+                      , taskDuration = Just oneDayTime
+                      , taskParent = Nothing
                       }
+                 
+    t21 <- insert task21
 
-    insert_ $ Product { productItem = item2
-                      , productDisplay = b111
-                      }
+    let task211 = Task { taskPrj = p2
+                       , taskDept = dept2
+                       , taskName = "Task #021000000"
+                       , taskStart = taskEnd task21
+                       , taskEnd = addUTCTime (2 * oneDayTime) (taskEnd task21)
+                       , taskDuration = Just (2 * oneDayTime)
+                       , taskParent = Just t21
+                       }
+    t211 <- insert task211
 
+    let task2111 = Task { taskPrj = p2
+                        , taskDept = dept2
+                        , taskName = "Task #021100000"
+                        , taskStart = taskEnd task211
+                        , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task211)
+                        , taskDuration = Just (3 * oneDayTime)
+                        , taskParent = Just t211
+                        }
+    t2111 <- insert task2111
 
-    pid12 <- insert $ Webpage { webpageSite = sid1
-                              , webpageTitle = "Sales #2"
-                              , webpageBgColor = Just "#00ff00"
-                              }
-    
+    let task21111 = Task { taskPrj = p2
+                         , taskDept = dept1
+                         , taskName = "Task #021100000"
+                         , taskStart = taskEnd task2111
+                         , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task2111)
+                         , taskDuration = Just (3 * oneDayTime)
+                         , taskParent = Just t2111
+                         }
+    t21111 <- insert task21111
+
+    prj3 <- insert Prj { prjOutlet = pt3
+                       , prjCode = "P003"
+                       , prjName = "Project #003"
+                       , prjLocation = "2351 County Road 0000 N Yale IL 62481"
+                       , prjStart = addUTCTime ((-45) * oneDayTime) now
+                       , prjEnd = addUTCTime (65 * oneDayTime) now
+                       }
 
     return ()

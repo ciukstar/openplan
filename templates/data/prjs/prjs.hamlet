@@ -1,0 +1,41 @@
+
+^{widgetTopbar Nothing (msgr MsgProjects) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+  
+    $if null prjs
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoProjectsYet}.
+          <p>_{MsgPleaseAddIfNecessary}.
+          
+    $else
+      $forall Entity pid (Prj _ code name _ start end) <- prjs
+        $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+          <a.row.padding.surface-container.wave href=@{DataR $ PrjR pid}>
+
+            <div.max>
+              <h6.small>#{name}
+              <div>
+                <label>#{code}
+              <div>
+                <label>
+                  _{MsgStart}: 
+                  <time.daytime datetime=#{fmt start}>
+                    #{fmt start}
+              <div>
+                <label>
+                  _{MsgEnd}: 
+                  <time.daytime datetime=#{fmt end}>
+                    #{fmt end}
+
+            <i>arrow_forward_ios
+
+          <hr>
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR PrjNewR}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

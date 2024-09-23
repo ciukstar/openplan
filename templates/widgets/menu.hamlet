@@ -14,13 +14,21 @@
   <nav.drawer>
 
 
-    <a href=@{DataR SitesR} :curr == Just (DataR SitesR):.active>
+    <a href=@{HomeR} :curr == Just HomeR:.active>
       <i>home
-      <span>_{MsgSites}
-      
-    <a href=@{DataR ItemsR} :curr == Just (DataR ItemsR):.active>
+      <span>_{MsgHome}
+
+    <a href=@{DataR PrjsR} :curr == Just (DataR PrjsR):.active>
+      <i>event_note
+      <span>_{MsgPlanning}
+
+    <a href=@{DataR $ DeptsR $ Depts []} :curr == Just (DataR $ DeptsR $ Depts []):.active>
+      <i>lan
+      <span>_{MsgDepartments}
+
+    <a href=@{DataR OutletsR} :curr == Just (DataR OutletsR):.active>
       <i>category
-      <span>_{MsgItems}
+      <span>_{MsgOutletType}
 
     <a href=@{DataR UsersR} :curr == Just (DataR UsersR):.active>
       <i>group
@@ -32,7 +40,7 @@
       <i>quick_reference
       <span>_{MsgDocumentation}
 
-    <a href="https://github.com/ciukstar/landcons" target=_blank>
+    <a href="https://github.com/ciukstar/openplan" target=_blank>
       <i>
         <img src=@{StaticR img_github_mark_white_svg}>
       <span>_{MsgSourceCode}

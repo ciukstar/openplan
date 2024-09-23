@@ -18,8 +18,8 @@ stanzas:
     #
     # The path given is for Stack projects. If you're still using cabal, change
     # to
-    # exec: ../dist/build/landcons/landcons
-    exec: ../dist/bin/landcons
+    # exec: ../dist/build/openplan/openplan
+    exec: ../dist/bin/openplan
 
     # Command line options passed to your application.
     args: []
@@ -28,7 +28,7 @@ stanzas:
       # You can specify one or more hostnames for your application to respond
       # to. The primary hostname will be used for generating your application
       # root.
-      - www.landcons.com
+      - www.openplan.com
 
     # Enable to force Keter to redirect to https
     # Can be added to any stanza
@@ -37,7 +37,7 @@ stanzas:
   # Static files.
   - type: static-files
     hosts:
-      - static.landcons.com
+      - static.openplan.com
     root: ../static
 
     # Uncomment to turn on directory listings.
@@ -47,9 +47,9 @@ stanzas:
   - type: redirect
 
     hosts:
-      - landcons.com
+      - openplan.com
     actions:
-      - host: www.landcons.com
+      - host: www.openplan.com
         # secure: false
         # port: 80
 

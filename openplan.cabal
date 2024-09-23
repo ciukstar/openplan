@@ -33,16 +33,14 @@ library
       Demo.DemoEn
       Demo.DemoRu
       Foundation
-      Handler.Body
       Handler.Common
+      Handler.Departments
       Handler.Docs
-      Handler.Footer
-      Handler.Header
       Handler.Home
-      Handler.Items
-      Handler.Sites
+      Handler.Outlets
+      Handler.Projects
+      Handler.Tasks
       Handler.Users
-      Handler.Webpages
       Import
       Import.NoFoundation
       Model

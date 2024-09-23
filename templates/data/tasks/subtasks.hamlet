@@ -1,0 +1,41 @@
+
+^{widgetTopbar (Just (DataR $ TasksR prjId (Tasks (init tids)),open)) (msgr MsgTask) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ TaskR prjId (last tids) (Tasks (init tids))}>_{MsgProperties}
+    <a.active href=@{DataR $ TasksR prjId ps}>_{MsgSubtasks}
+
+  <div.page.active>
+    $if null tasks
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoSubtasksYet}.
+          <p>_{MsgPleaseAddIfNecessary}.
+          
+    $else
+      $forall Entity tid (Task _ _ name start end _ _) <- tasks
+        <a.row.padding.surface-container.wave href=@{DataR $ TaskR prjId tid ps}>
+
+          <div.max>
+            <h6.small>#{name}
+            <label>
+              $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+                <div>
+                    <time.daytime datetime=#{fmt start}>
+                      #{fmt start}
+                <div>
+                  <time.daytime datetime=#{fmt end}>
+                    #{fmt end}
+
+          <i>arrow_forward_ios
+
+        <hr>
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR $ TaskNewR prjId ps}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

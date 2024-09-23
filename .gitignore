@@ -19,8 +19,8 @@ cabal.sandbox.config
 *.keter
 *~
 \#*
-landcons.cabal
+openplan.cabal
 deploy-demo-en.sh
 deploy-demo-ru.sh
 env.sh
-landcons
+openplan

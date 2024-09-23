@@ -17,7 +17,7 @@
 module Model where
 
 import ClassyPrelude.Yesod
-    ( Typeable, Int, Text, Textarea, mkMigrate
+    ( Typeable, Text, mkMigrate
     , mkPersist, persistFileWith, share, sqlSettings
     )
 
@@ -25,44 +25,47 @@ import Control.Monad (mapM)
 
 import Data.Bool (Bool)
 import Data.ByteString (ByteString)
+import Data.Either (Either (Left, Right))
 import Data.Eq (Eq)
 import Data.Function ((.))
 import Data.Functor ((<$>))
 import Data.Maybe (Maybe (Just))
-import Data.Ord (Ord)
+import qualified Data.Proxy as DP (Proxy)
 import Data.Text (pack, unpack)
+import Data.Time.Clock
+    ( UTCTime, NominalDiffTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
 
+import Database.Persist
+    ( PersistField, PersistValue, toPersistValue, fromPersistValue
+    , PersistValue (PersistInt64)
+    )
 import Database.Persist.Quasi ( lowerCaseSettings )
-import Database.Persist.Sql (fromSqlKey, toSqlKey)
-import Database.Persist.TH (derivePersistField)
+import Database.Persist.Sql (fromSqlKey, toSqlKey, PersistFieldSql, SqlType, sqlType)
+import Database.Persist.Types (SqlType (SqlInt64))
 
-import Prelude (Double)
+import Prelude (fromIntegral, truncate)
 
 import Text.Hamlet (Html)
 import Text.Read (Read, readMaybe)
-import Text.Shakespeare.I18N (Lang)
 import Text.Show (Show, show)
 
-import Yesod.Core.Dispatch (PathMultiPiece, toPathMultiPiece, fromPathMultiPiece)
 import Yesod.Auth.HashDB (HashDBUser (userPasswordHash, setPasswordHash))
+import Yesod.Core.Dispatch (PathMultiPiece, toPathMultiPiece, fromPathMultiPiece)
+import Yesod.Form (Textarea)
 
 
+instance PersistField NominalDiffTime where
+    toPersistValue :: NominalDiffTime -> PersistValue
+    toPersistValue x = PersistInt64 (truncate (nominalDiffTimeToSeconds x))
 
-data DisplayLayout = DisplayLayoutTable | DisplayLayoutList | DisplayLayoutCards
-    deriving (Show, Read, Eq, Ord)
-derivePersistField "DisplayLayout"
-
-
-data ContentsType = ContentsTypeText | ContentsTypeHtml
-    deriving (Show, Read, Eq, Ord)
-derivePersistField "ContentsType"
+    fromPersistValue :: PersistValue -> Either Text NominalDiffTime
+    fromPersistValue (PersistInt64 x) = Right (secondsToNominalDiffTime (fromIntegral x))
+    fromPersistValue _ = Left "Invalid NominalDiffTime"
 
 
-data HeadingLevel = HeadingLevelH1 | HeadingLevelH2 | HeadingLevelH3
-                  | HeadingLevelH4 | HeadingLevelH5 | HeadingLevelH6
-    deriving (Show, Read, Eq, Ord)
-derivePersistField "HeadingLevel"
-
+instance PersistFieldSql NominalDiffTime where
+    sqlType :: DP.Proxy NominalDiffTime -> SqlType
+    sqlType _ = SqlInt64
 
 -- You can define all of your database entities in the entities file.
 -- You can find more information on persistent and how to declare entities
@@ -72,14 +75,26 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models.persistentmodels")
 
 
-newtype Webpages = Webpages { unWebpage :: [WebpageId]}
+newtype Depts = Depts { unDepts :: [DeptId] }
+    deriving (Show, Read, Eq)
 
-instance PathMultiPiece Webpages where
-    toPathMultiPiece :: Webpages -> [Text]
-    toPathMultiPiece (Webpages xs) = pack . show . fromSqlKey <$> xs
+instance PathMultiPiece Depts where
+    toPathMultiPiece :: Depts -> [Text]
+    toPathMultiPiece (Depts xs) = pack . show . fromSqlKey <$> xs
 
-    fromPathMultiPiece :: [Text] -> Maybe Webpages
-    fromPathMultiPiece xs = Webpages <$> mapM ((toSqlKey <$>) . readMaybe . unpack) xs
+    fromPathMultiPiece :: [Text] -> Maybe Depts
+    fromPathMultiPiece xs = Depts <$> mapM ((toSqlKey <$>) . readMaybe . unpack) xs
+
+
+newtype Tasks = Tasks { unTasks :: [TaskId] }
+    deriving (Show, Read, Eq)
+
+instance PathMultiPiece Tasks where
+    toPathMultiPiece :: Tasks -> [Text]
+    toPathMultiPiece (Tasks xs) = pack . show . fromSqlKey <$> xs
+
+    fromPathMultiPiece :: [Text] -> Maybe Tasks
+    fromPathMultiPiece xs = Tasks <$> mapM ((toSqlKey <$>) . readMaybe . unpack) xs
 
 
 instance HashDBUser User where

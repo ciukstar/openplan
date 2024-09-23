@@ -1,2 +1,0 @@
-
-module Handler.Footer () where

@@ -1,3 +1,39 @@
+ParentTask: Parent task
+NoSubtasksYet: There are no subtasks yet
+NoTasksForThisProjectYet: There are no tasks for this project yet
+End: End
+Start: Start
+ProjectEnd: Project end
+ProjectStart: Project start
+ProjectStatistics: Project statistics
+ShowProjects: Show projects
+LoginforMoreDetailsPlease: Please login for more details
+NumberOfTasks: Number of tasks
+NumberOfProjects: Number of projects
+WelcomeTo: Welcome to
+NoOutletsYet: There are no outlet types yet
+OutletTypes: Outlet types
+OutletType: Outlet type
+Location: Location
+NoProjectsYet: There are no projects yet
+Subtasks: Subtasks
+Task: Task
+Tasks: Tasks
+Project: Project
+Projects: Projects
+RootDepartment: Root department
+NoDivisionsInDepartment: There are no divisions in this department
+ParentDepartment: Parent department
+Properties: Properties
+Code: Code
+Divisions: Divisions
+Department: Department
+Departments: Departments
+Planning: Planning
+ChangePassword: Change password
+AlreadyExists: Already exists
+No: No
+Yes: Yes
 DemoUserAccounts: Demo user accounts
 User: User
 Administrator: Administrator
@@ -11,62 +47,25 @@ PermissionDenied: Permission denied
 PageNotFound: Page not found
 
 PleaseAddIfNecessary: Please add if necessary
-NoPagesOnThisSiteYet: There are no pages on this site yet
 Empty: Empty
-Favicon: Favicon
 Copy: Copy
 Settings: Settings
-Color: Color
 Country: Country
 CountryRU: RU
 CountryUS: US
 Language: Language
 LangRu: Russian
 LangEn: English
-EmptyPage: Empty page
-NumberOfPages: number of pages
 Create: Create
-YouCanAddSomeFromProductList: You can add some from the product list
-NoProductsAssignedYet: There are currently no products assigned to this page
-AddProduct: Add product
-Layout: Layout
-Cards: Cards
-List: List
-Table: Table
-BackgroundColor: Background color
 Link: Link
 Attribution: Attribution
 Logo: Logo
 Photo: Photo
-Rating: Rating
-Currency: Currency
-Price: Price
-Item: Item
-Items: Items
-Article: Article
-Articles: Articles
 Url: URL
-Contents: Contents
-ContentType: Content type
-Level: Level
-HeadingLevel: Heading level
-Html: HTML
-Text: Text
-Headings: Headings
-Heading: Heading
-Preview: Preview
-Headers: Headers
 Details: Details
 Title: Title
-Header: Header
-Body: Body
-Footer: Footer
-Page: Page
-Pages: Pages
 RecordDeleted: Record deleted
 InvalidFormData: Invalid form data
-Site: Site
-Sites: Sites
 DateCreated: Date created
 TimeCreated: Time created
 Author: Author

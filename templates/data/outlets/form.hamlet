@@ -1,0 +1,24 @@
+
+#{extra}
+
+<div.field.label.border.round :isJust (fvErrors nameV):.invalid>
+
+  ^{fvInput nameV}
+  <label>
+    #{fvLabel nameV}
+    $if fvRequired nameV
+      <sup>*
+
+  $maybe err <- fvErrors nameV
+    <span.error>#{err}
+
+
+<div.field.border.round.label.textarea :isJust (fvErrors descrV):.invalid>
+  ^{fvInput descrV}
+  <label>
+    #{fvLabel descrV}
+    $if fvRequired descrV
+      <sup>*
+  $maybe err <- fvErrors descrV
+    <span.error>#{err}
+

@@ -49,44 +49,39 @@ import System.Log.FastLogger
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common (getFaviconR, getRobotsR)
-import Handler.Home ( getHomeR, getSiteHomeR, getPageR )
+import Handler.Home ( getHomeR )
 import Handler.Docs ( getDocsR )
 
-import Handler.Items
-    ( getItemsR, postItemsR
-    , getItemR, postItemR
-    , getItemNewR, getItemEditR, postItemDeleR
-    , getItemPhotoR
+
+import Handler.Tasks 
+    ( getTasksR, postTasksR
+    , getTaskR, postTaskR
+    , getTaskNewR, getTaskEditR, postTaskDeleR
     )
 
-import Handler.Sites
-    ( getSitesR, postSitesR
-    , getSiteR, postSiteR
-    , getSiteNewR, getSiteEditR, postSiteDeleR
-    , getSiteFaviconR
+import Handler.Projects 
+    ( getPrjsR, postPrjsR
+    , getPrjR, postPrjR
+    , getPrjNewR, getPrjEditR, postPrjDeleR
     )
 
-import Handler.Webpages
-  ( getWebpagesR, postWebpagesR
-  , getWebpageR, postWebpageR
-  , getWebpageNewR, getWebpageEditR, postWebpageDeleR
-  )
+import Handler.Outlets
+    ( getOutletsR, postOutletsR
+    , getOutletR, postOutletR
+    , getOutletNewR, getOutletEditR, postOutletDeleR
+    )
 
-import Handler.Header (getHeaderR, postHeaderR, getHeaderLogoR)
-
-import Handler.Body
-    ( getBodyR, postBodyR
-    , getBodyItemsR, postBodyItemsR
+import Handler.Departments
+    ( getDeptsR, postDeptsR
+    , getDeptR, postDeptR
+    , getDeptNewR, getDeptEditR, postDeptDeleR
     )
 
 import Handler.Users
-    ( getUsersR
+    ( getUsersR, postUsersR
+    , getUserR, postUserR
+    , getUserNewR, getUserEditR, postUserDeleR
     , getUserPhotoR
-    , postUserDeleR
-    , getUserEditR
-    , getUserNewR
-    , postUserR 
-    , getUserR
     )
 
 import System.Environment.Blank (getEnv)

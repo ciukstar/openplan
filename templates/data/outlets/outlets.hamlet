@@ -1,0 +1,28 @@
+
+^{widgetTopbar Nothing (msgr MsgOutletTypes) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+  
+    $if null outlets
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoOutletsYet}.
+          <p>_{MsgPleaseAddIfNecessary}.
+          
+    $else
+      $forall Entity oid (Outlet name _) <- outlets
+        <a.row.padding.surface-container.wave href=@{DataR $ OutletR oid}>
+
+          <div.max>
+            <h6.small>#{name}
+
+          <i>arrow_forward_ios
+
+        <hr>
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR OutletNewR}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

@@ -1,4 +1,0 @@
-
-document.getElementById(#{idButtonCopySiteUrl}).addEventListener('click', function (e) {
-  navigator.clipboard.writeText(document.getElementById(#{idSiteUrl}).href);
-});

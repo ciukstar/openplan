@@ -1,5 +1,5 @@
 
-^{widgetTopbar (Just HomeR) (msgr MsgAppName) idOverlay Nothing Nothing Nothing}
+^{widgetTopbar (Just (HomeR,[])) (msgr MsgAppName) idOverlay Nothing Nothing}
 
 <main.responsive>
 

@@ -22,7 +22,7 @@ import qualified Data.Text as T (intercalate)
 import qualified Data.Text.Encoding as TE
 
 import Database.Esqueleto.Experimental
-    ( selectOne, from, table, where_, val, (^.), Value (unValue), select )
+    ( selectOne, from, table, where_, val, (^.), select )
 import qualified Database.Esqueleto.Experimental as E ((==.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
@@ -76,14 +76,13 @@ type DB a = forall (m :: Type -> Type).
     (MonadUnliftIO m) => ReaderT SqlBackend m a
 
 
-widgetTopbar :: Maybe (Route App) -- ^ Back button
-             -> Text              -- ^ Title 
-             -> Text              -- ^ Overlay id
-             -> Maybe Text        -- ^ Id of delete dialog
-             -> Maybe (Route App) -- ^ Edit button
-             -> Maybe (Route App) -- ^ Preview button
+widgetTopbar :: Maybe (Route App,[(Text,Text)]) -- ^ Back button
+             -> Text                            -- ^ Title 
+             -> Text                            -- ^ Overlay id
+             -> Maybe Text                      -- ^ Id of delete dialog
+             -> Maybe (Route App)               -- ^ Edit button
              -> Widget
-widgetTopbar backlink title idOverlay idDialogDelete editRoute previewRoute = do
+widgetTopbar backlink title idOverlay idDialogDelete editRoute = do
     stati <- reqGetParams <$> getRequest
     rndr <- getUrlRenderParams
     idDialogMainMenu <- newIdent
@@ -180,14 +179,6 @@ instance Yesod App where
             -- addStylesheet $ StaticR css_bootstrap_css
                                     -- ^ generated from @Settings/StaticFiles.hs@
             $(widgetFile "default-layout")
-            
-        curr <- getCurrentRoute
-        pageColor <- case curr of
-          Just (PageR _ pid) -> (unValue =<<) <$> runDB ( selectOne $ do
-                  x <- from $ table @Webpage
-                  where_ $ x ^. WebpageId E.==. val pid
-                  return $ x ^. WebpageBgColor )
-          _otherwise -> return Nothing
           
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -205,42 +196,6 @@ instance Yesod App where
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
     isAuthorized DocsR _ = return Authorized
-
-    
-    isAuthorized (SiteHomeR _) _ = return Authorized
-    isAuthorized (PageR _ _) _ = return Authorized
-    
-    
-    isAuthorized (DataR (ItemPhotoR _)) _ = return Authorized
-    isAuthorized (DataR ItemsR) _ = return Authorized
-    isAuthorized (DataR (ItemR _)) _ = return Authorized
-    isAuthorized (DataR ItemNewR) _ = return Authorized
-    isAuthorized (DataR (ItemEditR _)) _ = return Authorized
-    isAuthorized (DataR (ItemDeleR _)) _ = return Authorized
-    
-    
-    isAuthorized (DataR (SiteFaviconR _)) _ = return Authorized
-    isAuthorized (DataR SitesR) _ = return Authorized
-    isAuthorized (DataR (SiteR _)) _ = return Authorized
-    isAuthorized (DataR SiteNewR) _ = return Authorized
-    isAuthorized (DataR (SiteEditR _)) _ = return Authorized
-    isAuthorized (DataR (SiteDeleR _)) _ = return Authorized
-
-    isAuthorized (DataR (WebpagesR _)) _ = return Authorized
-    isAuthorized (DataR (WebpageR _ _)) _ = return Authorized
-    isAuthorized (DataR (WebpageNewR _)) _ = return Authorized
-    isAuthorized (DataR (WebpageEditR _ _)) _ = return Authorized
-    isAuthorized (DataR (WebpageDeleR _ _)) _ = return Authorized
-
-    
-    isAuthorized (DataR (HeaderLogoR _)) _ = return Authorized
-    isAuthorized (DataR (HeaderR {})) _ = return Authorized
-    
-    isAuthorized (DataR (BodyR {})) _ = return Authorized
-    isAuthorized (DataR (BodyItemsR {})) _ = return Authorized
-    
-    
-    
     
     isAuthorized PwdResetR _ = return Authorized
     isAuthorized LangR _ = return Authorized
@@ -249,12 +204,37 @@ instance Yesod App where
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
 
+    isAuthorized (DataR (TaskDeleR {})) _ = isAuthenticated
+    isAuthorized (DataR (TaskEditR {})) _ = isAuthenticated
+    isAuthorized (DataR (TaskNewR _ _)) _ = isAuthenticated
+    isAuthorized (DataR (TaskR {})) _ = isAuthenticated
+    isAuthorized (DataR (TasksR _ _)) _ = setUltDestCurrent >> isAuthenticated
+
+    isAuthorized (DataR (PrjDeleR _)) _ = isAuthenticated
+    isAuthorized (DataR (PrjEditR _)) _ = isAuthenticated
+    isAuthorized (DataR PrjNewR) _ = isAuthenticated
+    isAuthorized (DataR (PrjR _)) _ = isAuthenticated
+    isAuthorized (DataR PrjsR) _ = setUltDestCurrent >> isAuthenticated
+
+    isAuthorized (DataR (OutletDeleR _)) _ = isAuthenticated
+    isAuthorized (DataR (OutletEditR _)) _ = isAuthenticated
+    isAuthorized (DataR OutletNewR) _ = isAuthenticated
+    isAuthorized (DataR (OutletR _)) _ = isAuthenticated
+    isAuthorized (DataR OutletsR) _ = setUltDestCurrent >> isAuthenticated
+    
+    
+
+    isAuthorized (DataR (DeptDeleR _ _)) _ = isAuthenticated
+    isAuthorized (DataR (DeptEditR _ _)) _ = isAuthenticated
+    isAuthorized (DataR (DeptNewR _)) _ = isAuthenticated
+    isAuthorized (DataR (DeptR _ _)) _ = isAuthenticated
+    isAuthorized (DataR (DeptsR _)) _ = setUltDestCurrent >> isAuthenticated
 
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin
     isAuthorized (DataR (UserEditR _)) _ = isAdmin
     isAuthorized (DataR UserNewR) _ = isAdmin
     isAuthorized (DataR (UserR _)) _ = isAdmin
-    isAuthorized (DataR UsersR) _ = isAdmin
+    isAuthorized (DataR UsersR) _ = setUltDestCurrent >> isAdmin
     isAuthorized (DataR (UserPhotoR _)) _ = return Authorized
     
 
@@ -328,7 +308,6 @@ instance Yesod App where
 
 getPwdResetR :: Handler Html
 getPwdResetR = do
-    rndr <- getUrlRenderParams
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgRestoreLogin
@@ -398,8 +377,8 @@ isAdmin :: Handler AuthResult
 isAdmin = do
     user <- maybeAuth
     case user of
-        Just (Entity _ (User _ _ True)) -> return Authorized
-        Just (Entity _ (User _ _ False)) -> unauthorizedI MsgAccessDeniedAdminsOnly
+        Just (Entity _ (User _ _ _ True)) -> return Authorized
+        Just (Entity _ (User _ _ _ False)) -> unauthorizedI MsgAccessDeniedAdminsOnly
         Nothing -> unauthorizedI MsgLoginPlease
 
 
@@ -407,8 +386,8 @@ isAdministrator :: Handler Bool
 isAdministrator = do
     user <- maybeAuth
     case user of
-        Just (Entity _ (User _ _ True)) -> return True
-        Just (Entity _ (User _ _ False)) -> return False
+        Just (Entity _ (User _ _ _ True)) -> return True
+        Just (Entity _ (User _ _ _ False)) -> return False
         Nothing -> return False
     
 

@@ -12,16 +12,7 @@ $doctype 5
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href=@{StaticR css_beer_min_css} rel="stylesheet">
 
-    $maybe route <- curr
-      $case route
-        $of SiteHomeR sid
-          <link rel=icon type="image/x-icon" href=@{DataR $ SiteFaviconR sid}>
-        $of PageR sid _
-          <link rel=icon type="image/x-icon" href=@{DataR $ SiteFaviconR sid}>
-        $of _
-          <link rel=icon type="image/x-icon" href=@{FaviconR}>
-    $nothing
-      <link rel=icon type="image/x-icon" href=@{FaviconR}>
+    <link rel=icon type="image/x-icon" href=@{FaviconR}>
 
     ^{pageHead pc}
     
@@ -51,7 +42,7 @@ $doctype 5
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
       
-  <body :isJust pageColor:style=background-color:#{fromMaybe "inherit" pageColor}>
+  <body>
 
     <script>
       [ localStorage.getItem('#{keyThemeMode}')

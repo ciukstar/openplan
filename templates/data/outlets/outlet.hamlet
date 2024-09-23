@@ -1,0 +1,41 @@
+
+<div.overlay ##{idOverlay} data-ui=##{idOverlay} onclick="document.getElementById('#{idDialogDelete}').close()">
+
+^{widgetTopbar (Just (DataR OutletsR,[])) (msgr MsgOutletType) idOverlay (Just idDialogDelete) (Just $ DataR $ OutletEditR oid)}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a.active href=@{DataR $ OutletR oid}>_{MsgProperties}
+    <a href=#>_{MsgTasks}
+
+  <div.page.active>
+
+    $maybe Entity _ (Outlet name descr) <- outlet
+      <dl.margin>
+
+        <dt>
+          <label.large>_{MsgName}
+        <dd.margin>
+          #{name}
+
+        <dt>
+          <label.large>_{MsgDescription}
+        <dd.margin>
+          $maybe descr <- descr
+            #{descr}
+            
+
+^{widgetSnackbar msgs}
+
+<dialog ##{idDialogDelete}>
+  <h5>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR $ OutletDeleR oid} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

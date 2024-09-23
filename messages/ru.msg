@@ -1,4 +1,39 @@
-
+ParentTask: Родительская задача
+NoSubtasksYet: Подзадач пока нет
+NoTasksForThisProjectYet: Для этого проекта пока нет задач
+End: Конец
+Start: Начало
+ProjectEnd: Конец проекта
+ProjectStart: Начало проекта
+ProjectStatistics: Статистика проектов
+ShowProjects: Показать проекты
+LoginforMoreDetailsPlease: Пожалуйста, войдите в систему для более подробной информации
+NumberOfTasks: Количество задач
+NumberOfProjects: Количество проектов
+WelcomeTo: Добро пожаловать на
+NoOutletsYet: Типов точек пока нет
+OutletTypes: Типы точек
+OutletType: Тип точки
+Location: Локация
+NoProjectsYet: Проектов пока нет
+Subtasks: Подзадачи
+Task: Задача
+Tasks: Задачи
+Project: Проек
+Projects: Проекты
+RootDepartment: Корневой отдел
+NoDivisionsInDepartment: В этом департаменте нет подразделений
+ParentDepartment: Родительский отдел
+Properties: Свойства
+Code: Код
+Divisions: Отделы
+Department: Департамент
+Departments: Департаменты
+Planning: Планирование
+ChangePassword: Изменить пароль
+AlreadyExists: Уже существует
+No: Нет
+Yes: Да
 DemoUserAccounts: Демо-аккаунты
 User: Пользователь
 Administrator: Администратор
@@ -12,62 +47,25 @@ PermissionDenied: Доступ запрещен
 PageNotFound: Страница не найдена
 
 PleaseAddIfNecessary: Пожалуйста, добавьте, если необходимо
-NoPagesOnThisSiteYet: На этом сайте пока нет страниц
 Empty: Пустой
-Favicon: Фавикон
 Copy: Копировать
 Settings: Настройки
-Color: Цвет
 Country: Страна
 CountryRU: Россия
 CountryUS: США
 Language: Язык
 LangRu: Русский
 LangEn: Английский
-EmptyPage: Пустая страница
-NumberOfPages: кол. страниц
 Create: Создать
-YouCanAddSomeFromProductList: Вы можете добавить некоторые из списка товаров
-NoProductsAssignedYet: В настоящее время на этой странице нет ни одного продукта
-AddProduct: Добавить продукт
-Layout: Макет
-Cards: Карты
-List: Список
-Table: Таблица
-BackgroundColor: Цвет фона
 Link: Ссылка
 Attribution: Атрибуция
 Logo: Логотип
 Photo: Фото
-Rating: Рейтинг
-Currency: Валюта
-Price: Цена
-Item: Продукт
-Items: Продукты
-Article: Товар
-Articles: Товары
 Url: URL-адрес
-Contents: Содержание
-ContentType: Тип содержимого
-Level: Уровень
-HeadingLevel: Уровень заголовка
-Html: HTML
-Text: Текст
-Headings: Рубрики
-Heading: Рубрика
-Preview: Предварительный просмотр
-Headers: Заголовки
 Details: Подробности
 Title: Название
-Header: Заголовок
-Body: Тело
-Footer: Нижний колонтитул
-Page: Страница
-Pages: Страницы
 RecordDeleted: Запись удалена
 InvalidFormData: Неверные данные формы
-Site: Сайт
-Sites: Сайты
 DateCreated: Дата создания
 TimeCreated: Время создания
 Author: Автор
