@@ -3,6 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Handler.Tasks
   ( getTasksR, postTasksR
@@ -15,7 +16,6 @@ import Control.Monad (void, forM)
 
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
-import Data.Maybe (isJust)
 import Data.Text (Text, pack)
 
 import Database.Esqueleto.Experimental
@@ -38,9 +38,12 @@ import Foundation
       , MsgRecordEdited, MsgSubtasks, MsgNoTasksForThisProjectYet
       , MsgParentTask, MsgStart, MsgEnd, MsgDepartment, MsgProject
       , MsgTaskStatusNotStarted, MsgTaskStatusCompleted, MsgTaskStatusInProgress
-      , MsgTaskStatusUncompleted, MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgSequence
+      , MsgTaskStatusUncompleted, MsgTaskStatusPartiallyCompleted, MsgTaskStatus
+      , MsgSequence
       )
     )
+    
+import Material3 (md3widget, daytimeLocalField, md3selectWidget)
 
 import Model
     ( msgSuccess, msgError, Tasks (Tasks)
@@ -59,16 +62,16 @@ import Settings (widgetFile)
 
 import Text.Hamlet (Html)
 
+import Yesod.Core
+    (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect, lookupGetParams)
 import Yesod.Core.Widget (setTitleI, whamlet)
-import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
-import Yesod.Form.Fields (textField, selectField, optionsPairs, datetimeLocalField)
+import Yesod.Form.Fields (textField, selectField, optionsPairs)
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvRequired, fvInput, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
@@ -98,7 +101,7 @@ getTaskEditR prjId did ps@(Tasks dids) = do
         where_ $ x ^. TaskId ==. val did
         return x
 
-    (fw,et) <- generateFormPost $ formDepartment prjId Nothing task
+    (fw,et) <- generateFormPost $ formTask prjId Nothing task
     
     msgr <- getMessageRender
     msgs <- getMessages
@@ -111,7 +114,7 @@ getTaskEditR prjId did ps@(Tasks dids) = do
 getTaskNewR :: PrjId -> Tasks -> Handler Html
 getTaskNewR prjId ps@(Tasks dids) = do
 
-    (fw,et) <- generateFormPost $ formDepartment prjId (LS.last dids) Nothing
+    (fw,et) <- generateFormPost $ formTask prjId (LS.last dids) Nothing
 
     msgr <- getMessageRender
     msgs <- getMessages
@@ -121,8 +124,8 @@ getTaskNewR prjId ps@(Tasks dids) = do
         $(widgetFile "data/tasks/new")
 
 
-formDepartment :: PrjId -> Maybe TaskId -> Maybe (Entity Task) -> Form Task
-formDepartment prjId did task extra = do
+formTask :: PrjId -> Maybe TaskId -> Maybe (Entity Task) -> Form Task
+formTask prjId did task extra = do
 
     deptOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Dept
@@ -140,12 +143,12 @@ formDepartment prjId did task extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (taskName . entityVal <$> task)
 
-    (startR,startV) <- mreq datetimeLocalField FieldSettings
+    (startR,startV) <- mreq daytimeLocalField FieldSettings
         { fsLabel = SomeMessage MsgStart
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . taskStart . entityVal <$> task)
 
-    (endR,endV) <- mreq datetimeLocalField FieldSettings
+    (endR,endV) <- mreq daytimeLocalField FieldSettings
         { fsLabel = SomeMessage MsgEnd
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . taskEnd . entityVal <$> task)
@@ -210,7 +213,7 @@ postTaskR prjId did ps@(Tasks dids) = do
         where_ $ x ^. TaskId ==. val did
         return x
 
-    ((fr,fw),et) <- runFormPost $ formDepartment prjId Nothing task
+    ((fr,fw),et) <- runFormPost $ formTask prjId Nothing task
     case fr of
       FormSuccess r -> do
           runDB $ replace did r
@@ -256,7 +259,7 @@ formTaskDelete extra = return (pure (), [whamlet|#{extra}|])
 postTasksR :: PrjId -> Tasks -> Handler Html
 postTasksR prjId ps = do
 
-    ((fr,fw),et) <- runFormPost $ formDepartment prjId Nothing Nothing
+    ((fr,fw),et) <- runFormPost $ formTask prjId Nothing Nothing
 
     case fr of
       FormSuccess r -> do

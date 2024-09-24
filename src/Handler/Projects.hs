@@ -12,8 +12,9 @@ module Handler.Projects
 
 import Control.Monad (void)
 
-import Data.Maybe (isJust)
+import Data.Bifunctor (Bifunctor(bimap))
 import Data.Text (Text, pack)
+import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import Database.Esqueleto.Experimental
@@ -36,6 +37,8 @@ import Foundation
       )
     )
 
+import Material3 (md3widget, md3selectWidget, daytimeLocalField)
+
 import Model
     ( msgSuccess, msgError, Tasks (Tasks)
     , PrjId, Prj(Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd)
@@ -49,16 +52,13 @@ import Text.Hamlet (Html)
 import Yesod.Core.Handler (newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
-import Yesod.Form.Fields (textField, selectField, optionsPairs, datetimeLocalField)
+import Yesod.Form.Fields (textField, selectField, optionsPairs)
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvRequired, fvInput, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
-import Data.Bifunctor (Bifunctor(bimap))
-import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 
 
 postPrjDeleR :: PrjId -> Handler Html
@@ -134,12 +134,12 @@ formProject prj extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (prjOutlet . entityVal <$> prj)
 
-    (startR,startV) <- mreq datetimeLocalField FieldSettings
+    (startR,startV) <- mreq daytimeLocalField FieldSettings
         { fsLabel = SomeMessage MsgProjectStart
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjStart . entityVal <$> prj)
 
-    (endR,endV) <- mreq datetimeLocalField FieldSettings
+    (endR,endV) <- mreq daytimeLocalField FieldSettings
         { fsLabel = SomeMessage MsgProjectEnd
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjEnd . entityVal <$> prj)

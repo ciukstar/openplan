@@ -2,50 +2,13 @@
 #{extra}
 
 $forall v <- [codeV, nameV, locationV]
-  <div.field.label.border.round :isJust (fvErrors v):.invalid>
-
-    ^{fvInput v}
-    <label>
-      #{fvLabel v}
-      $if fvRequired v
-        <sup>*
-
-    $maybe err <- fvErrors v
-      <span.error>#{err}
+  ^{md3widget v}
 
 
-<div.field.label.suffix.border.round :isJust (fvErrors typeV):.invalid>
-  ^{fvInput typeV}
-  <label>
-    #{fvLabel typeV}
-    $if fvRequired typeV
-      <sup>*
-  <i>arrow_drop_down
-  $maybe err <- fvErrors typeV
-    <span.error>#{err}
+^{md3selectWidget typeV}
 
 
-<div.field.label.border.round :isJust (fvErrors startV):.invalid>
-
-  ^{fvInput startV}
-  <label>
-    #{fvLabel startV}
-    $if fvRequired startV
-      <sup>*
-
-  $maybe err <- fvErrors startV
-    <span.error>#{err}
-
-
-<div.field.label.border.round :isJust (fvErrors endV):.invalid>
-
-  ^{fvInput endV}
-  <label>
-    #{fvLabel endV}
-    $if fvRequired endV
-      <sup>*
-
-  $maybe err <- fvErrors endV
-    <span.error>#{err}
+$forall v <- [startV, endV]
+  ^{md3widget v}
     
 

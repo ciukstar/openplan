@@ -13,7 +13,7 @@ module Handler.Employees
 import Control.Monad (void)
 
 import Data.Bifunctor (bimap)
-import Data.Maybe (isJust, fromMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Text (pack)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
@@ -40,6 +40,8 @@ import Foundation
       )
     )
 
+import Material3 (md3widget, md3selectWidget, daytimeLocalField)
+
 import Model
     ( msgSuccess, msgError
     , EmplId, Empl(Empl, emplUser, emplPosition, emplAppointment)
@@ -53,16 +55,16 @@ import Settings (widgetFile)
 
 import Text.Hamlet (Html)
 
+import Yesod.Core
+    (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
-import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
-import Yesod.Form.Fields (textField, selectField, optionsPairs, datetimeLocalField)
+import Yesod.Form.Fields (textField, selectField, optionsPairs)
 import Yesod.Form.Functions (generateFormPost, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvRequired, fvInput, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
 
@@ -134,7 +136,7 @@ formEmployee did empl extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (emplPosition . entityVal <$> empl)
 
-    (appointmentR,appointmentV) <- mopt datetimeLocalField FieldSettings
+    (appointmentR,appointmentV) <- mopt daytimeLocalField FieldSettings
         { fsLabel = SomeMessage MsgAppointmentDate
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } ((utcToLocalTime utc <$>) . emplAppointment . entityVal <$> empl)

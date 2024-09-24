@@ -2,46 +2,7 @@
 #{extra}
 
 $forall v <- [nameV,startV,endV]
-  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+  ^{md3widget v}
 
-    ^{fvInput v}
-    <label>
-      #{fvLabel v}
-      $if fvRequired v
-        <sup>*
-
-    $maybe err <- fvErrors v
-      <span.error>#{err}
-
-
-<div.field.label.suffix.border.round :isJust (fvErrors statusV):.invalid>
-  ^{fvInput statusV}
-  <label>
-    #{fvLabel statusV}
-    $if fvRequired statusV
-      <sup>*
-  <i>arrow_drop_down
-  $maybe err <- fvErrors statusV
-    <span.error>#{err}
-
-
-<div.field.label.suffix.border.round :isJust (fvErrors deptV):.invalid>
-  ^{fvInput deptV}
-  <label>
-    #{fvLabel deptV}
-    $if fvRequired deptV
-      <sup>*
-  <i>arrow_drop_down
-  $maybe err <- fvErrors deptV
-    <span.error>#{err}
-
-
-<div.field.label.suffix.border.round :isJust (fvErrors parentV):.invalid>
-  ^{fvInput parentV}
-  <label>
-    #{fvLabel parentV}
-    $if fvRequired parentV
-      <sup>*
-  <i>arrow_drop_down
-  $maybe err <- fvErrors parentV
-    <span.error>#{err}
+$forall v <- [statusV,deptV,parentV]
+  ^{md3selectWidget v}

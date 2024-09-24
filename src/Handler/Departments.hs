@@ -15,7 +15,6 @@ import Control.Monad (void, forM)
 
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
-import Data.Maybe (isJust)
 import Data.Text (Text, pack)
 
 import Database.Esqueleto.Experimental
@@ -39,6 +38,8 @@ import Foundation
       )
     )
 
+import Material3 (md3widget, md3selectWidget)
+
 import Model
     ( Depts (Depts), msgSuccess, msgError
     , DeptId, Dept(Dept, deptCode, deptName, deptParent)
@@ -49,15 +50,16 @@ import Settings (widgetFile)
 
 import Text.Hamlet (Html)
 
-import Yesod.Core.Handler (newIdent, getMessageRender, getMessages, addMessageI, redirect, lookupGetParams)
+import Yesod.Core
+    (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
+import Yesod.Core.Handler
+    (newIdent, getMessageRender, getMessages, addMessageI, redirect, lookupGetParams)
 import Yesod.Core.Widget (setTitleI, whamlet)
-import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
 import Yesod.Form.Fields (textField, selectField, optionsPairs)
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvRequired, fvInput, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
 

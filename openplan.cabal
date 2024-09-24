@@ -44,6 +44,7 @@ library
       Handler.Users
       Import
       Import.NoFoundation
+      Material3
       Model
       Settings
       Settings.StaticFiles
