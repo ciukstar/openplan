@@ -5,6 +5,7 @@
 
   <div.tabs>
     <a href=@{DataR $ DeptR (last dids) (Depts (init dids))}>_{MsgProperties}
+    <a href=@{DataR $ EmplsR (last dids) (Depts (init dids))}>_{MsgEmployees}
     <a.active href=@{DataR $ DeptsR ps}>_{MsgDivisions}
 
   <div.page.active>

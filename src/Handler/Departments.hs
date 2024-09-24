@@ -29,13 +29,13 @@ import Database.Persist.Sql (fromSqlKey)
 import Foundation
     ( Handler, Widget, Form, widgetSnackbar, widgetTopbar
     , Route (DataR)
-    , DataR (DeptsR, DeptR, DeptNewR, DeptEditR, DeptDeleR)
+    , DataR (DeptsR, DeptR, DeptNewR, DeptEditR, DeptDeleR, EmplsR)
     , AppMessage
       ( MsgDepartments, MsgDepartment, MsgSave, MsgCancel, MsgAlreadyExists
       , MsgCode, MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgDivisions, MsgDele, MsgParentDepartment
       , MsgRecordDeleted, MsgNoDivisionsInDepartment, MsgPleaseAddIfNecessary
-      , MsgRecordEdited, MsgRootDepartment
+      , MsgRecordEdited, MsgRootDepartment, MsgEmployees
       )
     )
 

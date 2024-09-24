@@ -71,6 +71,12 @@ import Handler.Outlets
     , getOutletNewR, getOutletEditR, postOutletDeleR
     )
 
+import Handler.Employees
+  ( getEmplsR, postEmplsR
+  , getEmplR, postEmplR
+  , getEmplNewR, getEmplEditR, postEmplDeleR
+  )
+
 import Handler.Departments
     ( getDeptsR, postDeptsR
     , getDeptR, postDeptR

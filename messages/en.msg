@@ -1,3 +1,9 @@
+AppointmentDate: Appointment date
+JobTitle: Job title
+NoEmployeesInThisDepartmentYet: There are no employees in this department yet
+NoEmployeesYet: There are no employees yet
+Employee: Employee
+Employees: Employees
 Sequence: Sequence
 TaskStatus: Status
 TaskStatusPartiallyCompleted: Partially completed

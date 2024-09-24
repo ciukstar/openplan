@@ -7,6 +7,7 @@
 
   <div.tabs>
     <a.active href=@{DataR $ DeptR did ps}>_{MsgProperties}
+    <a href=@{DataR $ EmplsR did ps}>_{MsgEmployees}
     <a href=@{DataR $ DeptsR (Depts (dids <> [did]))}>_{MsgDivisions}
 
   <div.page.active>
@@ -14,17 +15,17 @@
     $maybe (Entity _ (Dept code name _),parent) <- dept
       <dl.margin>
         <dt>
-          <label.large>_{MsgCode}
+          <label.bold.large-text>_{MsgCode}
         <dd.margin>
           #{code}
 
         <dt>
-          <label.large>_{MsgName}
+          <label.bold.large-text>_{MsgName}
         <dd.margin>
           #{name}
 
         <dt>
-          <label.large>_{MsgParentDepartment}
+          <label.bold.large-text>_{MsgParentDepartment}
         <dd.margin>
           $maybe Entity _ (Dept code name _) <- parent
             #{code}, #{name}

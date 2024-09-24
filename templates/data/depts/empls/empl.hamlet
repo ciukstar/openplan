@@ -1,0 +1,45 @@
+
+<div.overlay ##{idOverlay} data-ui=##{idOverlay} onclick="document.getElementById('#{idDialogDelete}').close()">
+
+^{widgetTopbar (Just $ (DataR $ EmplsR did ps,open)) (msgr MsgEmployee) idOverlay (Just idDialogDelete) (Just $ DataR $ EmplEditR did eid ps)}
+
+<main.responsive>
+
+  $maybe (Entity _ (Empl _ _ position appointment),Entity _ (User email _ name _)) <- empl
+
+    <dl.margin>
+
+      <dt>
+        <label.bold.large-text>_{MsgName}
+      <dd.margin>
+        $maybe name <- name
+          #{name}
+        $nothing
+          #{email}
+
+      <dt>
+        <label.bold.large-text>_{MsgJobTitle}
+      <dd.margin>
+        #{position}
+
+      <dt>
+        <label.bold.large-text>_{MsgAppointmentDate}
+      <dd.margin>
+        $maybe appointment <- appointment
+          $with dt <- pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" appointment
+            <time.daytime datetime=#{dt}>
+              #{dt}
+
+^{widgetSnackbar msgs}
+
+<dialog ##{idDialogDelete}>
+  <h5>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR $ EmplDeleR did eid ps} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

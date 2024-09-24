@@ -1,3 +1,9 @@
+AppointmentDate: Дата назначения
+JobTitle: Должность
+NoEmployeesInThisDepartmentYet: В этом отделе пока нет сотрудников
+NoEmployeesYet: Сотрудников пока нет
+Employee: Сотрудник
+Employees: Сотрудники
 Sequence: Последовательностьx
 TaskStatus: Статус
 TaskStatusPartiallyCompleted: Частично выполнено

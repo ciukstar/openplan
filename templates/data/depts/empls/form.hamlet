@@ -1,0 +1,27 @@
+
+#{extra}
+
+<div.field.label.suffix.border.round :isJust (fvErrors userV):.invalid>
+  ^{fvInput userV}
+  <label>
+    #{fvLabel userV}
+    $if fvRequired userV
+      <sup>*
+  <i>arrow_drop_down
+  $maybe err <- fvErrors userV
+    <span.error>#{err}
+    
+
+$forall v <- [positionV, appointmentV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+
+

@@ -36,6 +36,7 @@ library
       Handler.Common
       Handler.Departments
       Handler.Docs
+      Handler.Employees
       Handler.Home
       Handler.Outlets
       Handler.Projects

@@ -1,0 +1,48 @@
+
+^{widgetTopbar (Just $ (DataR $ DeptR did ps,open)) (msgr MsgDepartment) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ DeptR did ps}>_{MsgProperties}
+    <a.active href=@{DataR $ EmplsR did ps}>_{MsgEmployees}
+    <a href=@{DataR $ DeptsR (Depts (dids <> [did]))}>_{MsgDivisions}
+
+  <div.page.active>
+
+    $if null empls
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoEmployeesInThisDepartmentYet}.
+          <p>_{MsgPleaseAddIfNecessary}.
+      
+    $else
+      $forall (Entity eid (Empl _ _ position appointment),Entity _ (User email _ name _)) <- empls
+        <a.row.padding.surface-container.wave href=@{DataR $ EmplR did eid ps}>
+
+          <div.max>
+            <h6.small>
+              $maybe name <- name
+                #{name}
+              $nothing
+                #{email}
+
+            <div.bold>
+              #{position}
+                            
+            <label>
+              $maybe dt <- appointment
+                $with dt <- pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" dt
+                  <time.daytime datetime=#{dt}>
+                    #{dt}
+
+          <i>arrow_forward_ios
+
+        <hr>
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR $ EmplNewR did ps}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

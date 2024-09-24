@@ -34,7 +34,7 @@ Empl sql=employee
     user UserId OnDeleteCascade
     dept DeptId OnDeleteCascade
     position Text
-    appointment UTCTime sql=date_appointment
+    appointment UTCTime Maybe sql=date_appointment
 
 
 Role
