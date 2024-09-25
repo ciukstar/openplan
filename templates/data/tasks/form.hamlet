@@ -4,5 +4,5 @@
 $forall v <- [nameV,startV,endV]
   ^{md3widget v}
 
-$forall v <- [statusV,deptV,parentV]
+$forall v <- [statusV,deptV,parentV,ownerV]
   ^{md3selectWidget v}

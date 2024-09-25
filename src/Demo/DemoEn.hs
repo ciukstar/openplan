@@ -22,9 +22,9 @@ import Model
     , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskParent
-      , taskStatus
+      , taskStatus, taskOwner
       )
-    , TaskStatus (TaskStatusInProgress)
+    , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted)
     , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
     )
 
@@ -88,6 +88,20 @@ fillDemoEn = do
                         , userPhotoAttribution = Just freepik
                         }
 
+    pass4 <- liftIO $ saltPass "vschoen"
+    uid4 <- insert $ User { userEmail = "vschoen@xmail.edu"
+                          , userPassword = Just pass4
+                          , userName = Just "Valentina Schoen"
+                          , userAdmin = False
+                          }
+
+    liftIO (BS.readFile "demo/user_4.avif") >>= \bs ->
+      insert_ UserPhoto { userPhotoUser = uid4
+                        , userPhotoMime = "image/avif"
+                        , userPhotoPhoto = bs
+                        , userPhotoAttribution = Just freepik
+                        }
+
     dept1 <- insert Dept { deptCode = "Repairs"
                          , deptName = "Repairs"
                          , deptParent = Nothing
@@ -137,9 +151,21 @@ fillDemoEn = do
                          }
 
     empl2 <- insert Empl { emplUser = uid2
-                         , emplDept = dept2
+                         , emplDept = dept11
                          , emplPosition = "IT engineer"
                          , emplAppointment = Just (addUTCTime ((-200) * oneDayTime) now)
+                         }
+
+    empl3 <- insert Empl { emplUser = uid3
+                         , emplDept = dept2
+                         , emplPosition = "Engineer"
+                         , emplAppointment = Just (addUTCTime ((-250) * oneDayTime) now)
+                         }
+
+    empl4 <- insert Empl { emplUser = uid4
+                         , emplDept = dept21
+                         , emplPosition = "Architect"
+                         , emplAppointment = Just (addUTCTime ((-650) * oneDayTime) now)
                          }
 
     let prj1 = Prj { prjOutlet = pt1
@@ -161,6 +187,7 @@ fillDemoEn = do
                       , taskStatus = TaskStatusInProgress
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
+                      , taskOwner = Just empl2
                       }
 
     t11 <- insert task11
@@ -173,6 +200,7 @@ fillDemoEn = do
                        , taskStatus = TaskStatusInProgress
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t11
+                       , taskOwner = Just empl3
                        }
     t111 <- insert task111
 
@@ -184,6 +212,7 @@ fillDemoEn = do
                         , taskStatus = TaskStatusInProgress
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
+                        , taskOwner = Just empl4
                         }
 
     t1111 <- insert task1111
@@ -193,9 +222,10 @@ fillDemoEn = do
                          , taskName = "Task #011100000"
                          , taskStart = taskEnd task1111
                          , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task1111)
-                         , taskStatus = TaskStatusInProgress
+                         , taskStatus = TaskStatusNotStarted
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t1111
+                         , taskOwner = Nothing
                          }
     t11111 <- insert task11111
 
@@ -218,6 +248,7 @@ fillDemoEn = do
                       , taskStatus = TaskStatusInProgress
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
+                      , taskOwner = Just empl3
                       }
 
     t21 <- insert task21
@@ -230,6 +261,7 @@ fillDemoEn = do
                        , taskStatus = TaskStatusInProgress
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t21
+                       , taskOwner = Just empl3
                        }
     t211 <- insert task211
 
@@ -241,6 +273,7 @@ fillDemoEn = do
                         , taskStatus = TaskStatusInProgress
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t211
+                        , taskOwner = Just empl4
                         }
     t2111 <- insert task2111
 
@@ -252,6 +285,7 @@ fillDemoEn = do
                          , taskStatus = TaskStatusInProgress
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t2111
+                         , taskOwner = Just empl1
                          }
     t21111 <- insert task21111
 

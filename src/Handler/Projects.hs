@@ -33,11 +33,12 @@ import Foundation
     , DataR (PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR)
     , AppMessage
       ( MsgDepartments, MsgDepartment, MsgSave, MsgCancel, MsgAlreadyExists
-      , MsgCode, MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
-      , MsgConfirmPlease, MsgProperties, MsgDele, MsgRecordDeleted, MsgRecordEdited
-      , MsgProjects, MsgProject, MsgTasks, MsgNoProjectsYet, MsgPleaseAddIfNecessary
-      , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgStart, MsgEnd
-      , MsgProjectManager, MsgNotAppointedYet, MsgPhoto, MsgManager, MsgManagerNotAssigned, MsgTeam
+      , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
+      , MsgConfirmPlease, MsgProperties, MsgRecordDeleted, MsgRecordEdited
+      , MsgProjects, MsgProject, MsgNoProjectsYet, MsgPleaseAddIfNecessary
+      , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgTasks
+      , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
+      , MsgPhoto, MsgManagerNotAssigned, MsgTeam
       )
     )
 
@@ -160,13 +161,13 @@ formProject prj extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjEnd . entityVal <$> prj)
     
-    userOptions <- liftHandler $ (option <$>) <$> runDB ( select $ do
+    emplOptions <- liftHandler $ (option <$>) <$> runDB ( select $ do
         x :& u <- from $ table @Empl
             `innerJoin` table @User `on` (\(x :& u) -> x ^. EmplUser ==. u ^. UserId)
         orderBy [asc (u ^. UserName), asc (u ^. UserEmail), asc (u ^. UserId)]
         return ((u ^. UserName, u ^. UserEmail), x ^. EmplId) )
 
-    (managerR,managerV) <- mopt (selectField (pure $ optionsList $ options userOptions)) FieldSettings
+    (managerR,managerV) <- mopt (selectField (pure $ optionsList $ options emplOptions)) FieldSettings
         { fsLabel = SomeMessage MsgProjectManager
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
         , fsAttrs = []

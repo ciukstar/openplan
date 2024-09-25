@@ -1,3 +1,8 @@
+OwnerNotAssigned: Owner not assigned
+FirstTaskInSequence: This is the first task in the sequence
+PreviousTask: Previous task
+Owner: Owner
+TaskOwner: Task owner
 Team: Team
 ManagerNotAssigned: Manager not assigned
 Manager: Manager

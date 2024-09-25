@@ -11,7 +11,7 @@
 
   <div.page.active>
 
-    $maybe ((Entity _ (Task _ _ name start end status _ _),Entity _ (Dept _ dname _)),parent) <- task
+    $maybe (((Entity _ (Task _ _ name start end status _ _ _),Entity _ (Dept _ dname _)),parent),(owner,user)) <- task
 
       <dl.margin>
       
@@ -60,10 +60,32 @@
           #{dname}
 
         <dt>
-          <label.bold.large-text>_{MsgParentTask}
+          <label.bold.large-text>_{MsgPreviousTask}
         <dd.margin>
-          $maybe Entity _ (Task _ _ name _ _ _ _ _) <- parent
+          $maybe Entity _ (Task _ _ name _ _ _ _ _ _) <- parent
             #{name}
+          $nothing
+            <span.italic>_{MsgFirstTaskInSequence}
+
+        <dt>
+          <label.bold.large-text>_{MsgTaskOwner}
+        <dd.margin>
+          <div.row>
+            $maybe Entity _ (Empl uid _ position _) <- owner
+              <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+              <div.max>
+                <div>
+                  $maybe Entity _ (User email _ name _) <- user
+                    $maybe name <- name
+                      #{name}
+                    $nothing
+                      #{email}
+      
+                <label>
+                  #{position}
+                  
+            $nothing
+              <span.italic>_{MsgNotAppointedYet}
 
 ^{widgetSnackbar msgs}
 

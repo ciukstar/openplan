@@ -1,3 +1,8 @@
+OwnerNotAssigned: Владелец не назначен
+FirstTaskInSequence: Это первая задача в последовательности
+PreviousTask: Предыдущая задача
+Owner: Владелец
+TaskOwner: Владелец задачи
 Team: Команда
 ManagerNotAssigned: Руководитель не назначен
 Manager: Руководитель

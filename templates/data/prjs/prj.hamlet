@@ -68,7 +68,7 @@
                   #{position}
                   
             $nothing
-              _{MsgNotAppointedYet}
+              <span.italic>_{MsgNotAppointedYet}
                   
 
 ^{widgetSnackbar msgs}
