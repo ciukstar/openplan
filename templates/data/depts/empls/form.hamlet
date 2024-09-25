@@ -1,9 +1,23 @@
 
+<figure.center-align>
+  $maybe Entity _ (Empl uid _ _ _) <- empl
+    <img.circle.extra src=@{DataR $ UserPhotoR uid} ##{idImgPhoto} height=64 loading=lazy alt=_{MsgPhoto}>
+  $nothing
+    $case userR
+      $of FormSuccess uid
+        <img.circle.extra src=@{DataR $ UserPhotoR uid} ##{idImgPhoto} height=64 loading=lazy alt=_{MsgPhoto}>
+      $of _
+        $maybe uid <- (<$>) snd $ LS.head $ userOptions
+          <img.circle.extra src=@{DataR $ UserPhotoR uid} ##{idImgPhoto} height=64 loading=lazy alt=_{MsgPhoto}>
+        $nothing
+          <img.circle.extra src=@{StaticR img_account_circle_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}
+                            ##{idImgPhoto}
+                            height=64 loading=lazy alt=_{MsgPhoto}>
+
 #{extra}
 
 ^{md3selectWidget userV}
     
-
 $forall v <- [positionV, appointmentV]
   ^{md3widget v}
 

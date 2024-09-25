@@ -4,11 +4,12 @@
 $forall v <- [codeV, nameV, locationV]
   ^{md3widget v}
 
-
 ^{md3selectWidget typeV}
-
 
 $forall v <- [startV, endV]
   ^{md3widget v}
+
+^{md3selectWidget managerV}
+  
     
 

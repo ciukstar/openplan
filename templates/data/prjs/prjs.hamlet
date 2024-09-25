@@ -11,7 +11,7 @@
           <p>_{MsgPleaseAddIfNecessary}.
           
     $else
-      $forall Entity pid (Prj _ code name _ start end) <- prjs
+      $forall (Entity pid (Prj _ code name _ start end _),(manager,user)) <- prjs
         $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
           <a.row.padding.surface-container.wave href=@{DataR $ PrjR pid}>
 
@@ -21,14 +21,29 @@
                 <label>#{code}
               <div>
                 <label>
-                  _{MsgStart}: 
-                  <time.daytime datetime=#{fmt start}>
+                  <time.day datetime=#{fmt start}>
                     #{fmt start}
-              <div>
-                <label>
-                  _{MsgEnd}: 
-                  <time.daytime datetime=#{fmt end}>
+                  &mdash;
+                  <time.day datetime=#{fmt end}>
                     #{fmt end}
+              
+              <div.row>
+                $maybe Entity _ (Empl uid _ _ _) <- manager
+                  <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+                  <div.max>
+                    <label>
+                      _{MsgManager}
+                      
+                    <div>
+                      $maybe Entity _ (User email _ name _) <- user
+                        $maybe name <- name
+                          #{name}
+                        $nothing
+                          #{email}
+
+                $nothing
+                  <label.italic>
+                    _{MsgManagerNotAssigned}
 
             <i>arrow_forward_ios
 

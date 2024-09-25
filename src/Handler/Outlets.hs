@@ -12,7 +12,6 @@ module Handler.Outlets
 
 import Control.Monad (void)
 
-import Data.Maybe (isJust)
 import Data.Text (Text)
 
 import Database.Esqueleto.Experimental
@@ -28,11 +27,13 @@ import Foundation
     , AppMessage
       ( MsgSave, MsgCancel, MsgAlreadyExists, MsgName, MsgRecordAdded
       , MsgInvalidFormData, MsgDeleteAreYouSure, MsgConfirmPlease
-      , MsgProperties, MsgDele, MsgRecordDeleted, MsgRecordEdited
-      , MsgTasks, MsgNoOutletsYet, MsgPleaseAddIfNecessary
+      , MsgDele, MsgRecordDeleted, MsgRecordEdited
+      , MsgNoOutletsYet, MsgPleaseAddIfNecessary
       , MsgOutletType, MsgDescription, MsgOutletTypes
       )
     )
+
+import Material3 (md3widget, md3textareaWidget)
 
 import Model
     ( msgSuccess, msgError
@@ -44,15 +45,15 @@ import Settings (widgetFile)
 
 import Text.Hamlet (Html)
 
-import Yesod.Core.Handler (newIdent, getMessageRender, getMessages, addMessageI, redirect)
-import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage))
+import Yesod.Core.Handler
+    ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
+import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields (textField, textareaField)
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvRequired, fvInput, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
 

@@ -1,3 +1,8 @@
+Team: Team
+ManagerNotAssigned: Manager not assigned
+Manager: Manager
+NotAppointedYet: Not appointed yet
+ProjectManager: Project manager
 AppointmentDate: Appointment date
 JobTitle: Job title
 NoEmployeesInThisDepartmentYet: There are no employees in this department yet

@@ -5,10 +5,19 @@
 
 <main.responsive>
 
-  $maybe (Entity _ (Empl _ _ position appointment),Entity _ (User email _ name _)) <- empl
+  <div.tabs>
+    <a.active href=@{DataR $ EmplR did eid ps}>_{MsgDetails}
+    <a href=#>_{MsgProjects}
+    <a href=#>_{MsgTasks}
+
+  $maybe (Entity _ (Empl uid _ position appointment),Entity _ (User email _ name _)) <- empl
 
     <dl.margin>
-
+      <dt>
+        <label.bold.large-text>_{MsgPhoto}
+      <dd.margin>
+        <img.circle.extra src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+      
       <dt>
         <label.bold.large-text>_{MsgName}
       <dd.margin>

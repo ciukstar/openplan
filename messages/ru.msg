@@ -1,3 +1,8 @@
+Team: Команда
+ManagerNotAssigned: Руководитель не назначен
+Manager: Руководитель
+NotAppointedYet: Пока не назначен
+ProjectManager: Руководитель проекта
 AppointmentDate: Дата назначения
 JobTitle: Должность
 NoEmployeesInThisDepartmentYet: В этом отделе пока нет сотрудников

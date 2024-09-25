@@ -1,1 +1,5 @@
 
+document.getElementById(#{fvId userV}).addEventListener('change',function (e) {
+  const params = new URLSearchParams({#{paramUserId}: e.target.value});
+  document.getElementById(#{idImgPhoto}).setAttribute('src', `@{DataR $ EmployeePhotoR}?${params}`);
+});

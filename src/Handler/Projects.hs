@@ -10,50 +10,67 @@ module Handler.Projects
   , getPrjNewR, getPrjEditR, postPrjDeleR
   ) where
 
+import ClassyPrelude (readMay)
 import Control.Monad (void)
 
 import Data.Bifunctor (Bifunctor(bimap))
+import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
-    , (^.), (==.), (:&)((:&))
-    , Value (unValue), on, innerJoin
+    , (^.), (?.), (==.), (:&)((:&))
+    , Value (unValue), on, innerJoin, leftJoin
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
+import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
     ( Handler, Form, widgetSnackbar, widgetTopbar
     , Route (DataR)
-    , DataR (PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR)
+    , DataR (PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR)
     , AppMessage
       ( MsgDepartments, MsgDepartment, MsgSave, MsgCancel, MsgAlreadyExists
       , MsgCode, MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgDele, MsgRecordDeleted, MsgRecordEdited
       , MsgProjects, MsgProject, MsgTasks, MsgNoProjectsYet, MsgPleaseAddIfNecessary
       , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgStart, MsgEnd
+      , MsgProjectManager, MsgNotAppointedYet, MsgPhoto, MsgManager, MsgManagerNotAssigned, MsgTeam
       )
     )
 
 import Material3 (md3widget, md3selectWidget, daytimeLocalField)
 
 import Model
-    ( msgSuccess, msgError, Tasks (Tasks)
-    , PrjId, Prj(Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd)
-    , EntityField (PrjCode, PrjId, OutletName, OutletId, PrjOutlet), Outlet (Outlet)
+    ( msgSuccess, msgError
+    , Tasks (Tasks), Outlet (Outlet)
+    , PrjId
+    , Prj
+      ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
+      , prjManager
+      )
+    , Empl(Empl)
+    , User (User)
+    , EntityField
+      ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
+      , EmplUser, UserId, UserName, UserEmail
+      )
     )
 
 import Settings (widgetFile)
 
 import Text.Hamlet (Html)
 
-import Yesod.Core.Handler (newIdent, getMessageRender, getMessages, addMessageI, redirect)
+import Yesod.Core
+    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
+import Yesod.Core.Handler
+    ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
-import Yesod.Core (Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
-import Yesod.Form.Fields (textField, selectField, optionsPairs)
-import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost)
+import Yesod.Form.Fields
+    ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList))
+import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
@@ -122,7 +139,6 @@ formProject prj extra = do
         { fsLabel = SomeMessage MsgLocation
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (prjLocation . entityVal <$> prj)
-
         
     typeOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Outlet
@@ -143,14 +159,32 @@ formProject prj extra = do
         { fsLabel = SomeMessage MsgProjectEnd
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjEnd . entityVal <$> prj)
+    
+    userOptions <- liftHandler $ (option <$>) <$> runDB ( select $ do
+        x :& u <- from $ table @Empl
+            `innerJoin` table @User `on` (\(x :& u) -> x ^. EmplUser ==. u ^. UserId)
+        orderBy [asc (u ^. UserName), asc (u ^. UserEmail), asc (u ^. UserId)]
+        return ((u ^. UserName, u ^. UserEmail), x ^. EmplId) )
+
+    (managerR,managerV) <- mopt (selectField (pure $ optionsList $ options userOptions)) FieldSettings
+        { fsLabel = SomeMessage MsgProjectManager
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+        , fsAttrs = []
+        } (prjManager . entityVal <$> prj)
 
     let r = Prj <$> typeR <*> codeR <*> nameR <*> locationR
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
+            <*> managerR
 
     let w = $(widgetFile "data/prjs/form") 
     return (r,w)
   where
+
+      option = bimap ((\(x,y) -> fromMaybe y x) . bimap unValue unValue) unValue
+      options = ((\(lbl, pid) -> Option lbl pid (pack $ show $ fromSqlKey pid)) <$>)
+      optionsList = flip OptionList ((toSqlKey <$>) . readMay)
+      
       uniqueCodeField :: Field Handler Text
       uniqueCodeField = checkM uniqueCode textField
 
@@ -195,10 +229,12 @@ getPrjR :: PrjId -> Handler Html
 getPrjR pid = do
     
     prj <- runDB $ selectOne $ do
-        x :& t <- from $ table @Prj
+        x :& t :& m :& u <- from $ table @Prj
             `innerJoin` table @Outlet `on` (\(x :& t) -> x ^. PrjOutlet ==. t ^. OutletId)
+            `leftJoin` table @Empl `on` (\(x :& _ :& m) -> x ^. PrjManager ==. m ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& _ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
         where_ $ x ^. PrjId ==. val pid
-        return (x,t)
+        return ((x,t),(m,u))
 
     (fw0,et0) <- generateFormPost formPrjDelete
 
@@ -239,9 +275,11 @@ getPrjsR :: Handler Html
 getPrjsR = do
     
     prjs <- runDB $ select $ do
-        x <- from $ table @Prj
+        x :& m :& u <- from $ table @Prj
+            `leftJoin` table @Empl `on` (\(x :& m) -> x ^. PrjManager ==. m ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
         orderBy [asc (x ^. PrjId)]
-        return x
+        return (x,(m,u))
     
     msgr <- getMessageRender
     msgs <- getMessages

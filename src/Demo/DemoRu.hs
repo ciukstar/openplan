@@ -18,12 +18,12 @@ import Model
     , UserPhoto (UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
     , Dept (Dept, deptCode, deptName, deptParent)
     , Outlet (Outlet, outletName, outletDescr)
-    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd)
+    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration
       , taskParent, taskStatus
       )
-    , TaskStatus (TaskStatusInProgress)
+    , TaskStatus (TaskStatusInProgress), Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
     )
     
 import Text.Hamlet (shamlet)
@@ -130,12 +130,25 @@ fillDemoRu = do
                          , outletDescr = Just "Это точка типа №3"
                          }
 
+    empl1 <- insert Empl { emplUser = uid1
+                         , emplDept = dept1
+                         , emplPosition = "Бухгалтер"
+                         , emplAppointment = Just (addUTCTime ((-300) * oneDayTime) now)
+                         }
+
+    empl2 <- insert Empl { emplUser = uid2
+                         , emplDept = dept2
+                         , emplPosition = "ИТ-инженер"
+                         , emplAppointment = Just (addUTCTime ((-200) * oneDayTime) now)
+                         }
+
     let prj1 = Prj { prjOutlet = pt1
                    , prjCode = "П001"
                    , prjName = "Проект №001"
                    , prjLocation = "Россия, г. Тверь, Сосновая ул., д. 1 кв.165"
                    , prjStart = addUTCTime ((-30) * oneDayTime) now
                    , prjEnd = addUTCTime (44 * oneDayTime) now
+                   , prjManager = Just empl1
                    }
                
     p1 <- insert prj1
@@ -192,6 +205,7 @@ fillDemoRu = do
                        , prjLocation = "Россия, г. Тула, Колхозная ул., д. 19 кв.68"
                        , prjStart = addUTCTime ((-50) * oneDayTime) now
                        , prjEnd = addUTCTime (30 * oneDayTime) now
+                       , prjManager = Just empl2
                        }
 
     p2 <- insert prj2
@@ -247,6 +261,7 @@ fillDemoRu = do
                        , prjLocation = "Россия, г. Каспийск, Юбилейная ул., д. 10 кв.216"
                        , prjStart = addUTCTime ((-40) * oneDayTime) now
                        , prjEnd = addUTCTime (60 * oneDayTime) now
+                       , prjManager = Nothing
                        }
 
     return ()

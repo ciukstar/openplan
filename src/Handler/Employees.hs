@@ -8,11 +8,14 @@ module Handler.Employees
   ( getEmplsR, postEmplsR
   , getEmplR, postEmplR
   , getEmplNewR, getEmplEditR, postEmplDeleR
+  , getEmployeePhotoR
+  , getEmplProjectsR
   ) where
 
 import Control.Monad (void)
 
 import Data.Bifunctor (bimap)
+import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe)
 import Data.Text (pack)
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -24,26 +27,30 @@ import Database.Esqueleto.Experimental
     , Value (unValue), innerJoin, on
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
-import Database.Persist.Sql (fromSqlKey)
+import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
     ( Handler, Form, widgetSnackbar, widgetTopbar
-    , Route (DataR)
-    , DataR (EmplsR, EmplR, EmplNewR, EmplEditR, EmplDeleR, DeptsR, DeptR)
+    , Route (DataR, StaticR)
+    , DataR
+      ( EmplsR, EmplR, EmplNewR, EmplEditR, EmplDeleR, DeptsR, DeptR
+      , UserPhotoR, EmployeePhotoR
+      )
     , AppMessage
-      ( MsgEmployees, MsgEmployee, MsgSave, MsgCancel
+      ( MsgEmployees, MsgEmployee, MsgSave, MsgCancel, MsgPhoto
       , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
-      , MsgConfirmPlease, MsgProperties, MsgDele
+      , MsgConfirmPlease, MsgProperties, MsgDele, MsgDetails
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgDivisions
       , MsgRecordEdited, MsgNoEmployeesInThisDepartmentYet
       , MsgDepartment, MsgJobTitle, MsgAppointmentDate, MsgUser
+      , MsgProjects, MsgTasks
       )
     )
 
 import Material3 (md3widget, md3selectWidget, daytimeLocalField)
 
 import Model
-    ( msgSuccess, msgError
+    ( msgSuccess, msgError, paramUserId
     , EmplId, Empl(Empl, emplUser, emplPosition, emplAppointment)
     , DeptId, Depts (Depts), User (User)
     , EntityField
@@ -52,6 +59,8 @@ import Model
     )
 
 import Settings (widgetFile)
+import Settings.StaticFiles
+    ( img_account_circle_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg)
 
 import Text.Hamlet (Html)
 
@@ -60,13 +69,21 @@ import Yesod.Core
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
-import Yesod.Form.Fields (textField, selectField, optionsPairs)
+import Yesod.Form.Fields
+    ( textField, selectField, intField, Option (Option), OptionList (OptionList))
 import Yesod.Form.Functions (generateFormPost, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
+    , FieldView (fvId)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
+import Yesod.Form.Input (ireq, runInputGet)
+import ClassyPrelude (readMay)
+
+
+getEmplProjectsR :: DeptId -> EmplId -> Depts -> Handler Html
+getEmplProjectsR _did _eid _ps@(Depts _dids) = undefined
 
 
 postEmplDeleR :: DeptId -> EmplId -> Depts -> Handler Html
@@ -125,7 +142,7 @@ formEmployee did empl extra = do
         orderBy [asc (x ^. UserName), asc (x ^. UserEmail), asc (x ^. UserId)]
         return ((x ^. UserName, x ^. UserEmail), x ^. UserId) )
 
-    (userR,userV) <- mreq (selectField (optionsPairs userOptions)) FieldSettings
+    (userR,userV) <- mreq (selectField (pure $ optionsList $ options userOptions)) FieldSettings
         { fsLabel = SomeMessage MsgUser
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
         , fsAttrs = []
@@ -144,8 +161,13 @@ formEmployee did empl extra = do
     let r = Empl <$> userR <*> pure did <*> positionR
             <*> ((localTimeToUTC utc <$>) <$> appointmentR)
 
+    idImgPhoto <- newIdent
     let w = $(widgetFile "data/depts/empls/form")
     return (r,w)
+  where
+
+      options = ((\(lbl, pid) -> Option lbl pid (pack $ show $ fromSqlKey pid)) <$>)
+      optionsList = flip OptionList ((toSqlKey <$>) . readMay)
 
 
 postEmplR :: DeptId -> EmplId -> Depts -> Handler Html
@@ -237,3 +259,9 @@ getEmplsR did ps@(Depts dids) = do
         setTitleI MsgEmployees 
         idOverlay <- newIdent
         $(widgetFile "data/depts/empls/empls")
+
+
+getEmployeePhotoR :: Handler ()
+getEmployeePhotoR = do
+    uid <- toSqlKey <$> runInputGet ( ireq intField paramUserId )
+    redirect $ DataR $ UserPhotoR uid

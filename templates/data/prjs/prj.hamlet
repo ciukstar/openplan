@@ -8,10 +8,11 @@
   <div.tabs>
     <a.active href=@{DataR $ PrjR pid}>_{MsgProperties}
     <a href=@{DataR $ TasksR pid (Tasks [])}>_{MsgTasks}
+    <a href=#>_{MsgTeam}
 
   <div.page.active>
 
-    $maybe (Entity _ (Prj _ code name location start end),Entity _ (Outlet oname _)) <- prj
+    $maybe ((Entity _ (Prj _ code name location start end _),outlet),(manager,user)) <- prj
       <dl.margin>
         <dt>
           <label.bold.large-text>_{MsgCode}
@@ -31,21 +32,44 @@
         <dt>
           <label.bold.large-text>_{MsgOutletType}
         <dd.margin>
-          #{oname}
+          $with Entity _ (Outlet oname _) <- outlet
+            #{oname}
+
+        $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+          <dt>
+            <label.bold.large-text>_{MsgProjectStart}
+          <dd.margin>
+            $with dt <- fmt start
+              <time.daytime datetime=#{dt}>
+                #{dt}
+
+          <dt>
+            <label.bold.large-text>_{MsgProjectEnd}
+          <dd.margin>
+            $with dt <- fmt end
+              <time.daytime datetime=#{dt}>
+                #{dt}
 
         <dt>
-          <label.bold.large-text>_{MsgProjectStart}
+          <label.bold.large-text>_{MsgProjectManager}
         <dd.margin>
-          $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-            <time.daytime datetime=#{fmt start}>
-              #{fmt start}
-
-        <dt>
-          <label.bold.large-text>_{MsgProjectEnd}
-        <dd.margin>
-          $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-            <time.daytime datetime=#{fmt end}>
-              #{fmt end}
+          <div.row>
+            $maybe Entity _ (Empl uid _ position _) <- manager
+              <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+              <div.max>
+                <div>
+                  $maybe Entity _ (User email _ name _) <- user
+                    $maybe name <- name
+                      #{name}
+                    $nothing
+                      #{email}
+      
+                <label>
+                  #{position}
+                  
+            $nothing
+              _{MsgNotAppointedYet}
+                  
 
 ^{widgetSnackbar msgs}
 

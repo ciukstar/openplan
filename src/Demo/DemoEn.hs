@@ -19,14 +19,15 @@ import Model
       ( UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
     , Dept (Dept, deptCode, deptName, deptParent)
     , Outlet (Outlet, outletName, outletDescr)
-    , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd)
+    , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskParent
       , taskStatus
       )
     , TaskStatus (TaskStatusInProgress)
+    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
     )
-    
+
 import Text.Hamlet (shamlet)
 
 import Yesod.Auth.Email (saltPass)
@@ -129,14 +130,27 @@ fillDemoEn = do
                          , outletDescr = Just "The Point Type #3"
                          }
 
+    empl1 <- insert Empl { emplUser = uid1
+                         , emplDept = dept1
+                         , emplPosition = "Accountant"
+                         , emplAppointment = Just (addUTCTime ((-300) * oneDayTime) now)
+                         }
+
+    empl2 <- insert Empl { emplUser = uid2
+                         , emplDept = dept2
+                         , emplPosition = "IT engineer"
+                         , emplAppointment = Just (addUTCTime ((-200) * oneDayTime) now)
+                         }
+
     let prj1 = Prj { prjOutlet = pt1
                    , prjCode = "P001"
                    , prjName = "Project #01"
                    , prjLocation = "1485 NW Street St Wilson WY 83014"
                    , prjStart = addUTCTime ((-30) * oneDayTime) now
                    , prjEnd = addUTCTime (40 * oneDayTime) now
+                   , prjManager = Just empl1
                    }
-               
+
     p1 <- insert prj1
 
     let task11 = Task { taskPrj = p1
@@ -148,7 +162,7 @@ fillDemoEn = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       }
-                 
+
     t11 <- insert task11
 
     let task111 = Task { taskPrj = p1
@@ -171,6 +185,7 @@ fillDemoEn = do
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
                         }
+
     t1111 <- insert task1111
 
     let task11111 = Task { taskPrj = p1
@@ -190,6 +205,7 @@ fillDemoEn = do
                    , prjLocation = "102 W E ST Elkton VA 22827"
                    , prjStart = addUTCTime ((-40) * oneDayTime) now
                    , prjEnd = addUTCTime (50 * oneDayTime) now
+                   , prjManager = Just empl2
                    }
 
     p2 <- insert prj2
@@ -203,7 +219,7 @@ fillDemoEn = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       }
-                 
+
     t21 <- insert task21
 
     let task211 = Task { taskPrj = p2
@@ -245,6 +261,7 @@ fillDemoEn = do
                        , prjLocation = "2351 County Road 0000 N Yale IL 62481"
                        , prjStart = addUTCTime ((-45) * oneDayTime) now
                        , prjEnd = addUTCTime (65 * oneDayTime) now
+                       , prjManager = Nothing
                        }
 
     return ()

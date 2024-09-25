@@ -21,6 +21,7 @@ Prj sql=project
     location Text
     start UTCTime
     end UTCTime
+    manager EmplId Maybe
     UniquePrj code
 
 

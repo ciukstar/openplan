@@ -75,6 +75,8 @@ import Handler.Employees
   ( getEmplsR, postEmplsR
   , getEmplR, postEmplR
   , getEmplNewR, getEmplEditR, postEmplDeleR
+  , getEmployeePhotoR
+  , getEmplProjectsR
   )
 
 import Handler.Departments

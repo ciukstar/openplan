@@ -39,7 +39,7 @@ import Foundation
       , MsgParentTask, MsgStart, MsgEnd, MsgDepartment, MsgProject
       , MsgTaskStatusNotStarted, MsgTaskStatusCompleted, MsgTaskStatusInProgress
       , MsgTaskStatusUncompleted, MsgTaskStatusPartiallyCompleted, MsgTaskStatus
-      , MsgSequence
+      , MsgSequence, MsgTeam
       )
     )
     

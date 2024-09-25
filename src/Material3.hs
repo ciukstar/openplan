@@ -5,6 +5,7 @@
 
 module Material3
   ( md3widget
+  , md3textareaWidget
   , md3selectWidget
   , daytimeLocalField
   ) where
@@ -25,6 +26,19 @@ import Yesod.Form.Types
     ( Field (fieldView)
     , FieldView (fvErrors, fvInput, fvLabel, fvRequired)
     )
+
+    
+md3textareaWidget :: RenderMessage m FormMessage => FieldView m -> WidgetFor m ()
+md3textareaWidget v = [whamlet|
+  <div.field.border.round.label.textarea :isJust (fvErrors v):.invalid>
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+    $maybe err <- fvErrors v
+      <span.error>#{err}
+|]
 
     
 md3selectWidget :: RenderMessage m FormMessage => FieldView m -> WidgetFor m ()

@@ -39,12 +39,15 @@
     /outlets/#OutletId      OutletR     GET POST
     /outlets                OutletsR    GET POST
 
-
+    /departments/#DeptId/empls/#EmplId/prjs/+Depts EmplProjectsR GET
+    
     /dele/departments/#DeptId/employees/#EmplId/+Depts EmplDeleR  POST
     /edit/departments/#DeptId/employees/#EmplId/+Depts EmplEditR  GET
     /form/departments/#DeptId/employees/new/+Depts     EmplNewR   GET
     /departments/#DeptId/employee/#EmplId/+Depts       EmplR      GET POST
     /departments/#DeptId/employees/+Depts              EmplsR     GET POST
+
+    /employee/photo EmployeePhotoR GET
     
 
     /dele/depts/#DeptId/+Depts DeptDeleR POST

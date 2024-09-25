@@ -18,9 +18,11 @@
           <p>_{MsgPleaseAddIfNecessary}.
       
     $else
-      $forall (Entity eid (Empl _ _ position appointment),Entity _ (User email _ name _)) <- empls
+      $forall (Entity eid (Empl uid _ position appointment),Entity _ (User email _ name _)) <- empls
         <a.row.padding.surface-container.wave href=@{DataR $ EmplR did eid ps}>
 
+          <img.circle.extra src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+          
           <div.max>
             <h6.small>
               $maybe name <- name
@@ -34,7 +36,7 @@
             <label>
               $maybe dt <- appointment
                 $with dt <- pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" dt
-                  <time.daytime datetime=#{dt}>
+                  <time.day datetime=#{dt}>
                     #{dt}
 
           <i>arrow_forward_ios

@@ -223,12 +223,15 @@ instance Yesod App where
     isAuthorized (DataR OutletsR) _ = setUltDestCurrent >> isAuthenticated
     
     
+    isAuthorized (DataR (EmplProjectsR {})) _ = isAuthenticated
 
     isAuthorized (DataR (EmplDeleR {})) _ = isAuthenticated
     isAuthorized (DataR (EmplEditR {})) _ = isAuthenticated
     isAuthorized (DataR (EmplNewR _ _)) _ = isAuthenticated
     isAuthorized (DataR (EmplR {})) _ = isAuthenticated
     isAuthorized (DataR (EmplsR _ _)) _ = isAuthenticated
+
+    isAuthorized (DataR EmployeePhotoR) _ = isAuthenticated
 
     isAuthorized (DataR (DeptDeleR _ _)) _ = isAuthenticated
     isAuthorized (DataR (DeptEditR _ _)) _ = isAuthenticated
