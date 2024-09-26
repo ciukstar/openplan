@@ -63,6 +63,7 @@ import Handler.Projects
     ( getPrjsR, postPrjsR
     , getPrjR, postPrjR
     , getPrjNewR, getPrjEditR, postPrjDeleR
+    , getPrjTeamR
     )
 
 import Handler.Outlets
@@ -77,6 +78,7 @@ import Handler.Employees
   , getEmplNewR, getEmplEditR, postEmplDeleR
   , getEmployeePhotoR
   , getEmplProjectsR
+  , getEmplTasksR
   )
 
 import Handler.Departments

@@ -210,6 +210,8 @@ instance Yesod App where
     isAuthorized (DataR (TaskR {})) _ = isAuthenticated
     isAuthorized (DataR (TasksR _ _)) _ = isAuthenticated
 
+    isAuthorized (DataR (PrjTeamR _)) _ = isAuthenticated
+
     isAuthorized (DataR (PrjDeleR _)) _ = isAuthenticated
     isAuthorized (DataR (PrjEditR _)) _ = isAuthenticated
     isAuthorized (DataR PrjNewR) _ = isAuthenticated
@@ -222,7 +224,7 @@ instance Yesod App where
     isAuthorized (DataR (OutletR _)) _ = isAuthenticated
     isAuthorized (DataR OutletsR) _ = setUltDestCurrent >> isAuthenticated
     
-    
+    isAuthorized (DataR (EmplTasksR {})) _ = isAuthenticated
     isAuthorized (DataR (EmplProjectsR {})) _ = isAuthenticated
 
     isAuthorized (DataR (EmplDeleR {})) _ = isAuthenticated

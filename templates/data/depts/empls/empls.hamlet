@@ -1,10 +1,11 @@
 
-^{widgetTopbar (Just $ (DataR $ DeptR did ps,open)) (msgr MsgDepartment) idOverlay Nothing Nothing}
+^{widgetTopbar (Just $ (DataR $ DeptsR ps,open)) (msgr MsgDepartment) idOverlay Nothing Nothing}
 
 <main.responsive.no-padding>
 
   <div.tabs>
     <a href=@{DataR $ DeptR did ps}>_{MsgProperties}
+    <a href=#>_{MsgTasks}
     <a.active href=@{DataR $ EmplsR did ps}>_{MsgEmployees}
     <a href=@{DataR $ DeptsR (Depts (dids <> [did]))}>_{MsgDivisions}
 

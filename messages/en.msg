@@ -1,3 +1,4 @@
+NoTasksYet: There are no tasks yet
 OwnerNotAssigned: Owner not assigned
 FirstTaskInSequence: This is the first task in the sequence
 PreviousTask: Previous task

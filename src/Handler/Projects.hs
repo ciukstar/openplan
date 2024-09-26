@@ -8,6 +8,7 @@ module Handler.Projects
   ( getPrjsR, postPrjsR
   , getPrjR, postPrjR
   , getPrjNewR, getPrjEditR, postPrjDeleR
+  , getPrjTeamR
   ) where
 
 import ClassyPrelude (readMay)
@@ -22,7 +23,7 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&))
-    , Value (unValue), on, innerJoin, leftJoin
+    , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just, subSelectList
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
@@ -30,9 +31,12 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Foundation
     ( Handler, Form, widgetSnackbar, widgetTopbar
     , Route (DataR)
-    , DataR (PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR)
+    , DataR
+      ( PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR
+      , PrjTeamR
+      )
     , AppMessage
-      ( MsgDepartments, MsgDepartment, MsgSave, MsgCancel, MsgAlreadyExists
+      ( MsgSave, MsgCancel, MsgAlreadyExists
       , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgRecordDeleted, MsgRecordEdited
       , MsgProjects, MsgProject, MsgNoProjectsYet, MsgPleaseAddIfNecessary
@@ -47,16 +51,15 @@ import Material3 (md3widget, md3selectWidget, daytimeLocalField)
 import Model
     ( msgSuccess, msgError
     , Tasks (Tasks), Outlet (Outlet)
+    , Empl(Empl), User (User), Task
     , PrjId
     , Prj
       ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
       , prjManager
       )
-    , Empl(Empl)
-    , User (User)
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
-      , EmplUser, UserId, UserName, UserEmail
+      , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj
       )
     )
 
@@ -77,6 +80,36 @@ import Yesod.Form.Types
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
+
+
+getPrjTeamR :: PrjId -> Handler Html
+getPrjTeamR pid = do
+    
+    manager <- runDB $ selectOne $ do
+        x :& u <- from $ table @Empl
+            `innerJoin` table @User `on` (\(x :& u) -> x ^. EmplUser ==. u ^. UserId)
+        where_ $ just (x ^. EmplId) ==. subSelectMaybe ( do
+            p <- from $ table @Prj
+            where_ $ p ^. PrjId ==. val pid
+            return $ p ^. PrjManager )
+        return (x,u)
+
+    owners <- runDB $ select $ do
+        x :& u <- from $ table @Empl
+            `innerJoin` table @User `on` (\(x :& u) -> x ^. EmplUser ==. u ^. UserId)
+        where_ $ just (x ^. EmplId) `in_` subSelectList ( do
+            p <- from $ table @Task
+            where_ $ p ^. TaskPrj ==. val pid
+            return $ p ^. TaskOwner )
+        return (x,u)
+
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgProject
+        idOverlay <- newIdent
+        idDialogDelete <- newIdent
+        $(widgetFile "data/prjs/team")
 
 
 postPrjDeleR :: PrjId -> Handler Html
@@ -105,7 +138,7 @@ getPrjEditR pid = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgDepartment
+        setTitleI MsgProject
         idOverlay <- newIdent
         $(widgetFile "data/prjs/edit")
 
@@ -118,7 +151,7 @@ getPrjNewR = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgDepartment
+        setTitleI MsgProject
         idOverlay <- newIdent
         $(widgetFile "data/prjs/new")
 
@@ -221,7 +254,7 @@ postPrjR pid = do
           msgr <- getMessageRender
           msgs <- getMessages
           defaultLayout $ do
-              setTitleI MsgDepartment
+              setTitleI MsgProject
               idOverlay <- newIdent
               $(widgetFile "data/prjs/edit")
 
@@ -242,7 +275,7 @@ getPrjR pid = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgDepartment
+        setTitleI MsgProject
         idOverlay <- newIdent
         idDialogDelete <- newIdent
         $(widgetFile "data/prjs/prj")
@@ -268,6 +301,7 @@ postPrjsR = do
           msgr <- getMessageRender
           msgs <- getMessages
           defaultLayout $ do
+              setTitleI MsgProject
               idOverlay <- newIdent
               $(widgetFile "data/prjs/new")
 
@@ -285,7 +319,7 @@ getPrjsR = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgDepartments 
+        setTitleI MsgProjects 
         idOverlay <- newIdent
         $(widgetFile "data/prjs/prjs")
 

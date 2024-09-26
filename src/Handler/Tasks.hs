@@ -34,16 +34,21 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey)
 import Foundation
     ( Handler, Widget, Form, widgetSnackbar, widgetTopbar
     , Route (DataR)
-    , DataR (TasksR, TaskR, TaskNewR, TaskEditR, TaskDeleR, PrjR, PrjsR, UserPhotoR)
+    , DataR
+      ( TasksR, TaskR, TaskNewR, TaskEditR, TaskDeleR, PrjR, PrjsR
+      , UserPhotoR, PrjTeamR
+      )
     , AppMessage
       ( MsgTasks, MsgTask, MsgSave, MsgCancel, MsgAlreadyExists
       , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgDele, MsgNoSubtasksYet
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgTeam, MsgTaskOwner
       , MsgRecordEdited, MsgSubtasks, MsgNoTasksForThisProjectYet, MsgSequence
-      , MsgParentTask, MsgStart, MsgEnd, MsgDepartment, MsgProject
-      , MsgTaskStatusNotStarted, MsgTaskStatusCompleted, MsgTaskStatusInProgress
-      , MsgTaskStatusUncompleted, MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgPreviousTask, MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner, MsgManagerNotAssigned, MsgOwnerNotAssigned
+      , MsgStart, MsgEnd, MsgDepartment, MsgProject, MsgTaskStatusNotStarted
+      , MsgTaskStatusCompleted, MsgTaskStatusInProgress, MsgTaskStatusUncompleted
+      , MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgPreviousTask
+      , MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner
+      , MsgOwnerNotAssigned
       )
     )
     

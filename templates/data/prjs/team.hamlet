@@ -1,0 +1,51 @@
+
+<div.overlay ##{idOverlay} data-ui=##{idOverlay} onclick="document.getElementById('#{idDialogDelete}').close()">
+
+^{widgetTopbar (Just (DataR PrjsR,[])) (msgr MsgProject) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ PrjR pid}>_{MsgProperties}
+    <a href=@{DataR $ TasksR pid (Tasks [])}>_{MsgTasks}
+    <a.active href=@{DataR $ PrjTeamR pid}>_{MsgTeam}
+
+  <div.page.active>
+
+    <dl.margin>
+
+      <dt>
+        <label.bold.large-text>_{MsgProjectManager}
+      <dd.margin>
+        <div.row>
+          $maybe (Entity _ (Empl uid _ position _),Entity _ (User email _ name _)) <- manager
+            <img.circle src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+            <div.max>
+              <div>
+                $maybe name <- name
+                  #{name}
+                $nothing
+                  #{email}
+
+              <label>
+                #{position}
+
+          $nothing
+            <span.italic>_{MsgNotAppointedYet}
+
+    <hr.margin>
+    $forall (Entity _ (Empl uid _ position _),Entity _ (User email _ name _)) <- owners
+      <div.row>
+        <img.circle src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+        <div.max>
+          <div>
+            $maybe name <- name
+              #{name}
+            $nothing
+              #{email}
+
+          <label>
+            #{position}
+                  
+
+^{widgetSnackbar msgs}

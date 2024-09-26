@@ -10,7 +10,10 @@ module Handler.Employees
   , getEmplNewR, getEmplEditR, postEmplDeleR
   , getEmployeePhotoR
   , getEmplProjectsR
+  , getEmplTasksR
   ) where
+
+import ClassyPrelude (readMay)
 
 import Control.Monad (void)
 
@@ -24,7 +27,7 @@ import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (==.), (:&)((:&))
-    , Value (unValue), innerJoin, on
+    , Value (unValue), innerJoin, on, just
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
@@ -34,7 +37,7 @@ import Foundation
     , Route (DataR, StaticR)
     , DataR
       ( EmplsR, EmplR, EmplNewR, EmplEditR, EmplDeleR, DeptsR, DeptR
-      , UserPhotoR, EmployeePhotoR
+      , UserPhotoR, EmployeePhotoR, EmplProjectsR, EmplTasksR
       )
     , AppMessage
       ( MsgEmployees, MsgEmployee, MsgSave, MsgCancel, MsgPhoto
@@ -43,7 +46,10 @@ import Foundation
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgDivisions
       , MsgRecordEdited, MsgNoEmployeesInThisDepartmentYet
       , MsgDepartment, MsgJobTitle, MsgAppointmentDate, MsgUser
-      , MsgProjects, MsgTasks
+      , MsgProjects, MsgTasks, MsgNoProjectsYet, MsgNoTasksYet
+      , MsgTaskStatusCompleted, MsgTaskStatusInProgress
+      , MsgTaskStatusNotStarted, MsgTaskStatusPartiallyCompleted
+      , MsgTaskStatusUncompleted
       )
     )
 
@@ -53,8 +59,14 @@ import Model
     ( msgSuccess, msgError, paramUserId
     , EmplId, Empl(Empl, emplUser, emplPosition, emplAppointment)
     , DeptId, Depts (Depts), User (User)
+    , Prj (Prj), Task (Task)
     , EntityField
-      ( EmplId, EmplDept, EmplUser, UserId, UserName, UserEmail
+      ( EmplId, EmplDept, EmplUser, UserId, UserName, UserEmail, PrjManager
+      , PrjId, TaskOwner
+      )
+    , TaskStatus
+      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
+      , TaskStatusUncompleted, TaskStatusPartiallyCompleted
       )
     )
 
@@ -69,6 +81,7 @@ import Yesod.Core
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
+import Yesod.Form.Input (ireq, runInputGet)
 import Yesod.Form.Fields
     ( textField, selectField, intField, Option (Option), OptionList (OptionList))
 import Yesod.Form.Functions (generateFormPost, mreq, runFormPost, mopt)
@@ -78,12 +91,43 @@ import Yesod.Form.Types
     , FieldView (fvId)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
-import Yesod.Form.Input (ireq, runInputGet)
-import ClassyPrelude (readMay)
+
+
+getEmplTasksR :: DeptId -> EmplId -> Depts -> Handler Html
+getEmplTasksR did eid ps@(Depts dids) = do
+
+    let open = ("o",) . pack . show . fromSqlKey <$> did : dids
+
+    tasks <- runDB $ select $ do
+        x <- from $ table @Task
+        where_ $ x ^. TaskOwner ==. just (val eid)
+        return x
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgTasks
+        idOverlay <- newIdent
+        $(widgetFile "data/depts/empls/tasks/tasks")
 
 
 getEmplProjectsR :: DeptId -> EmplId -> Depts -> Handler Html
-getEmplProjectsR _did _eid _ps@(Depts _dids) = undefined
+getEmplProjectsR did eid ps@(Depts dids) = do
+
+    let open = ("o",) . pack . show . fromSqlKey <$> did : dids
+    
+    prjs <- runDB $ select $ do
+        x <- from $ table @Prj
+        where_ $ x ^. PrjManager ==. just (val eid)
+        orderBy [asc (x ^. PrjId)]
+        return x
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgProjects
+        idOverlay <- newIdent
+        $(widgetFile "data/depts/empls/prjs/prjs")
 
 
 postEmplDeleR :: DeptId -> EmplId -> Depts -> Handler Html
@@ -245,7 +289,7 @@ postEmplsR did ps = do
 getEmplsR :: DeptId -> Depts -> Handler Html
 getEmplsR did ps@(Depts dids) = do
 
-    let open = ("o",) . pack . show . fromSqlKey <$> dids 
+    let open = ("o",) . pack . show . fromSqlKey <$> did : dids 
 
     empls <- runDB $ select $ do
         x :& u <- from $ table @Empl

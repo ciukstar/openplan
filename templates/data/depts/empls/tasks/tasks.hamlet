@@ -1,0 +1,50 @@
+
+^{widgetTopbar (Just $ (DataR $ EmplsR did ps,open)) (msgr MsgEmployee) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ EmplR did eid ps}>_{MsgDetails}
+    <a href=@{DataR $ EmplProjectsR did eid ps}>_{MsgProjects}
+    <a.active href=@{DataR $ EmplTasksR did eid ps}>_{MsgTasks}
+
+  <div.page.active>
+    $if null tasks
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoTasksYet}.
+          
+    $else
+      $forall Entity _ (Task _ _ name start end status _ _ _) <- tasks
+        <div.row.padding.surface-container>
+
+          <div.max>
+            <h6.small>
+              #{name}
+
+            <div.bold>
+              $case status
+                $of TaskStatusNotStarted
+                  _{MsgTaskStatusNotStarted}
+                $of TaskStatusInProgress
+                  _{MsgTaskStatusInProgress}
+                $of TaskStatusCompleted
+                  _{MsgTaskStatusCompleted}
+                $of TaskStatusUncompleted
+                  _{MsgTaskStatusUncompleted}
+                $of TaskStatusPartiallyCompleted
+                  _{MsgTaskStatusPartiallyCompleted}
+                            
+            <label>
+              $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+                <div>
+                    <time.daytime datetime=#{fmt start}>
+                      #{fmt start}
+                <div>
+                  <time.daytime datetime=#{fmt end}>
+                    #{fmt end}
+
+        <hr>
+
+  ^{widgetSnackbar msgs}

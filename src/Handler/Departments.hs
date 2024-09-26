@@ -34,7 +34,7 @@ import Foundation
       , MsgCode, MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgDivisions, MsgDele, MsgParentDepartment
       , MsgRecordDeleted, MsgNoDivisionsInDepartment, MsgPleaseAddIfNecessary
-      , MsgRecordEdited, MsgRootDepartment, MsgEmployees
+      , MsgRecordEdited, MsgRootDepartment, MsgEmployees, MsgTasks
       )
     )
 

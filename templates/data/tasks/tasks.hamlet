@@ -7,7 +7,7 @@
   <div.tabs>
     <a href=@{DataR $ PrjR prjId}>_{MsgProperties}
     <a.active href=@{DataR $ TasksR prjId (Tasks [])}>_{MsgTasks}
-    <a href=#>_{MsgTeam}
+    <a href=@{DataR $ PrjTeamR prjId}>_{MsgTeam}
 
   <div.page.active>
 

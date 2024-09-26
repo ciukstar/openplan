@@ -25,6 +25,7 @@
     /prjs/#PrjId/task/#TaskId/+Tasks       TaskR     GET POST
     /prjs/#PrjId/tasks/+Tasks              TasksR    GET POST
 
+    /prjs/#PrjId/team PrjTeamR GET 
 
     /prjs/#PrjId/dele PrjDeleR POST
     /prjs/#PrjId/edit PrjEditR GET
@@ -38,6 +39,8 @@
     /outlets/new/form       OutletNewR  GET
     /outlets/#OutletId      OutletR     GET POST
     /outlets                OutletsR    GET POST
+
+    /departments/#DeptId/empls/#EmplId/tasks/+Depts EmplTasksR GET
 
     /departments/#DeptId/empls/#EmplId/prjs/+Depts EmplProjectsR GET
     

@@ -1,3 +1,4 @@
+NoTasksYet: Задач пока нет
 OwnerNotAssigned: Владелец не назначен
 FirstTaskInSequence: Это первая задача в последовательности
 PreviousTask: Предыдущая задача

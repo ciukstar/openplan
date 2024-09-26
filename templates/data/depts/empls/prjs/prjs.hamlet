@@ -1,0 +1,38 @@
+
+^{widgetTopbar (Just $ (DataR $ EmplsR did ps,open)) (msgr MsgEmployee) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ EmplR did eid ps}>_{MsgDetails}
+    <a.active href=@{DataR $ EmplProjectsR did eid ps}>_{MsgProjects}
+    <a href=@{DataR $ EmplTasksR did eid ps}>_{MsgTasks}
+
+  <div.page.active>
+  
+    $if null prjs
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoProjectsYet}.
+          
+    $else
+      $forall Entity _ (Prj _ code name _ start end _) <- prjs
+        $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+          <div.row.padding.surface-container>
+
+            <div.max>
+              <h6.small>#{name}
+              <div>
+                <label>#{code}
+              <div>
+                <label>
+                  <time.day datetime=#{fmt start}>
+                    #{fmt start}
+                  &mdash;
+                  <time.day datetime=#{fmt end}>
+                    #{fmt end}
+
+          <hr>
+
+  ^{widgetSnackbar msgs}

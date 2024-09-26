@@ -7,8 +7,8 @@
 
   <div.tabs>
     <a.active href=@{DataR $ EmplR did eid ps}>_{MsgDetails}
-    <a href=#>_{MsgProjects}
-    <a href=#>_{MsgTasks}
+    <a href=@{DataR $ EmplProjectsR did eid ps}>_{MsgProjects}
+    <a href=@{DataR $ EmplTasksR did eid ps}>_{MsgTasks}
 
   $maybe (Entity _ (Empl uid _ position appointment),Entity _ (User email _ name _)) <- empl
 
