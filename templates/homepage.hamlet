@@ -3,15 +3,73 @@
 
 <main.responsive>
 
-  <h3.small.margin.center-align>
+  <h4.margin.center-align>
     _{MsgWelcomeTo} _{MsgAppName}
 
   $maybe _ <- user
     <article.margin>
       <div.row>
+        <i.circle.extra>task
+        <div.max>
+          <h5>_{MsgMyTasks}
+          
+          <form method=get action=@{HomeR}>
+            $forall (status,label) <- taskStati
+              $with selected <- elem status stati
+                <button.chip.round.tiny-margin type=submit name=status value=#{show status} :selected:.fill>
+                  $if selected
+                    <i>done
+                  <span>_{label}
+
+          $if null tasks
+            <p.italic>
+              _{MsgNoTasksWereFoundForSearchTerms}.
+                
+          $else
+            $forall (Entity _ (Task _ _ tname _ end status _ _ _),Entity _ (Prj _ _ pname _ _ _ _)) <- tasks
+              <details.margin>
+                <summary>
+                  #{tname}
+
+                <table>
+                  <tbody>
+
+                    <tr>
+                      <th.no-wrap scope=row>
+                        _{MsgTaskStatus}
+                      <td.max>
+                        $case status
+                          $of TaskStatusNotStarted
+                            _{MsgTaskStatusNotStarted}
+                          $of TaskStatusInProgress
+                            _{MsgTaskStatusInProgress}
+                          $of TaskStatusCompleted
+                            _{MsgTaskStatusCompleted}
+                          $of TaskStatusUncompleted
+                            _{MsgTaskStatusUncompleted}
+                          $of TaskStatusPartiallyCompleted
+                            _{MsgTaskStatusPartiallyCompleted}
+
+                    <tr>
+                      <th.no-wrap scope=row>
+                        _{MsgCompletionDate}
+                      <td.max>
+                        $with dt <- pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" end
+                          <time.daytime datetime=#{dt}>
+                            #{dt}
+
+                    <tr>
+                      <th.no-wrap scope=row>
+                        _{MsgProject}
+                      <td.max>
+                        #{pname}
+                
+          
+    <article.margin>
+      <div.row>
         <i.circle.extra>event_note
         <div.max>
-          <h5>_{MsgProjectStatistics}
+          <h5>_{MsgStatistics}
           <p>
             _{MsgNumberOfProjects}: #{nprjs}
           <p>
@@ -24,16 +82,31 @@
   $nothing
     <article.margin>
       <div.row>
+        <i.circle.extra>task_alt
+        <div.max>
+          <h5>_{MsgMyTasks}
+
+          <p>
+            <label.italic>_{MsgLoginToCheckYourTasks}
+          
+      <nav>
+        <a.button.transparent.border href=@{AuthR LoginR}>
+          <i>login
+          _{MsgSignIn}
+                
+                
+    <article.margin>
+      <div.row>
         <i.circle.extra>event_note
         <div.max>
-          <h5>_{MsgProjectStatistics}
+          <h5>_{MsgStatistics}
           <p>
             _{MsgNumberOfProjects}: #{nprjs}
           <p>
             _{MsgNumberOfTasks}: #{ntasks}
 
           <p>
-            <label>_{MsgLoginforMoreDetailsPlease}
+            <label.italic>_{MsgLoginForMoreDetailsPlease}
           
       <nav>
         <a.button.transparent.border href=@{AuthR LoginR}>

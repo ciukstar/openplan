@@ -1,3 +1,9 @@
+NoTasksWereFoundForSearchTerms: No tasks were found containing all your search terms
+Deadline: Deadline
+CompletionDate: Completion date
+LoginToCheckYourTasks: Please log in to check your tasks
+MyTasks: My tasks
+Statistics: Statistics
 NoTasksYet: There are no tasks yet
 OwnerNotAssigned: Owner not assigned
 FirstTaskInSequence: This is the first task in the sequence
@@ -32,7 +38,7 @@ ProjectEnd: Project end
 ProjectStart: Project start
 ProjectStatistics: Project statistics
 ShowProjects: Show projects
-LoginforMoreDetailsPlease: Please login for more details
+LoginForMoreDetailsPlease: Please login for more details
 NumberOfTasks: Number of tasks
 NumberOfProjects: Number of projects
 WelcomeTo: Welcome to

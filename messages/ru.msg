@@ -1,3 +1,9 @@
+NoTasksWereFoundForSearchTerms: Не найдено ни одной задачи, содержащей все ваши условия поиска
+Deadline: Крайний срок
+CompletionDate: Срок выполнения
+LoginToCheckYourTasks: Пожалуйста, войдите в систему, чтобы проверить свои задачи
+MyTasks: Мои задачи
+Statistics: Статистика
 NoTasksYet: Задач пока нет
 OwnerNotAssigned: Владелец не назначен
 FirstTaskInSequence: Это первая задача в последовательности
@@ -32,7 +38,7 @@ ProjectEnd: Конец проекта
 ProjectStart: Начало проекта
 ProjectStatistics: Статистика проектов
 ShowProjects: Показать проекты
-LoginforMoreDetailsPlease: Пожалуйста, войдите в систему для более подробной информации
+LoginForMoreDetailsPlease: Пожалуйста, войдите в систему для более подробной информации
 NumberOfTasks: Количество задач
 NumberOfProjects: Количество проектов
 WelcomeTo: Добро пожаловать на
