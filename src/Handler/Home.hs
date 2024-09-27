@@ -13,6 +13,7 @@ import ClassyPrelude (readMay)
 
 import Control.Monad (unless)
 
+import Data.Bifunctor (bimap)
 import Data.Maybe (mapMaybe)
 import Data.Text (pack)
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -20,27 +21,27 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 import Database.Esqueleto.Experimental
     ( SqlExpr, Value (unValue), selectOne, from, table, countRows, select
     , (^.), (==.), (:&)((:&))
-    , innerJoin, on, where_, val, just, valList, in_
+    , innerJoin, on, where_, val, just, valList, in_, groupBy
     )
 import Database.Persist (Entity (Entity), entityKey)
 
 import Foundation
-    ( Handler, widgetSnackbar, widgetTopbar
+    ( Handler, widgetSnackbar, widgetTopbar, taskStati
     , Route(AuthR, HomeR, DataR)
     , DataR (PrjsR)
     , AppMessage
-      ( MsgAppName, MsgHome, MsgNumberOfProjects, MsgNumberOfTasks, MsgWelcomeTo
+      ( MsgAppName, MsgHome, MsgWelcomeTo, MsgNoDescriptionGiven, MsgDescription
       , MsgSignIn, MsgLoginForMoreDetailsPlease, MsgStatistics, MsgShowProjects
       , MsgMyTasks, MsgLoginToCheckYourTasks, MsgTaskStatus, MsgCompletionDate
       , MsgProject, MsgTaskStatusPartiallyCompleted, MsgTaskStatusCompleted
-      , MsgTaskStatusInProgress, MsgTaskStatusUncompleted
-      , MsgTaskStatusInProgress, MsgTaskStatusNotStarted
+      , MsgTaskStatusInProgress, MsgTaskStatusUncompleted, MsgTotalTasks
+      , MsgTaskStatusInProgress, MsgTaskStatusNotStarted, MsgTotalProjects
       , MsgNoTasksWereFoundForSearchTerms
       )
     )
     
 import Model
-    ( Prj (Prj), Task (Task), Empl
+    ( paramTaskStatus, Prj (Prj), Task (Task), Empl
     , TaskStatus
       ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
       , TaskStatusUncompleted, TaskStatusPartiallyCompleted
@@ -67,14 +68,7 @@ getHomeR :: Handler Html
 getHomeR = do
     user <- maybeAuth
 
-    stati <- mapMaybe readMay <$> lookupGetParams "status"
-
-    let taskStati = [ (TaskStatusNotStarted,MsgTaskStatusNotStarted)
-                    , (TaskStatusInProgress,MsgTaskStatusInProgress)
-                    , (TaskStatusCompleted,MsgTaskStatusCompleted)
-                    , (TaskStatusUncompleted,MsgTaskStatusUncompleted)
-                    , (TaskStatusPartiallyCompleted,MsgTaskStatusPartiallyCompleted)
-                    ]
+    stati <- mapMaybe readMay <$> lookupGetParams paramTaskStatus
 
     tasks <- runDB $ select $ do
         x :& p :& o <- from $ table @Task
@@ -88,9 +82,10 @@ getHomeR = do
         _ <- from $ table @Prj
         return (countRows :: SqlExpr (Value Int)) )
 
-    ntasks <- maybe 0 unValue <$> runDB ( selectOne $ do
-        _ <- from $ table @Task
-        return (countRows :: SqlExpr (Value Int)) )
+    taskStats <- (bimap unValue unValue <$>) <$> runDB ( select $ do
+        x <- from $ table @Task
+        groupBy (x ^. TaskStatus)
+        return (x ^. TaskStatus, countRows :: SqlExpr (Value Int)) )
     
     msgr <- getMessageRender
     msgs <- getMessages

@@ -18,10 +18,10 @@ import Model
     , UserPhoto (UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
     , Dept (Dept, deptCode, deptName, deptParent)
     , Outlet (Outlet, outletName, outletDescr)
-    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager)
+    , Prj (Prj, prjOutlet, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager, prjDescr)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskStatus
-      , taskParent, taskOwner
+      , taskParent, taskOwner, taskDescr
       )
     , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted)
     , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
@@ -176,6 +176,7 @@ fillDemoRu = do
                    , prjStart = addUTCTime ((-30) * oneDayTime) now
                    , prjEnd = addUTCTime (44 * oneDayTime) now
                    , prjManager = Just empl1
+                   , prjDescr = Just "Это проект №001 с кодом П001."
                    }
                
     p1 <- insert prj1
@@ -189,6 +190,7 @@ fillDemoRu = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       , taskOwner = Just empl2
+                      , taskDescr = Just "Сделай то, сделай это"
                       }
                  
     t11 <- insert task11
@@ -202,6 +204,7 @@ fillDemoRu = do
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t11
                        , taskOwner = Just empl3
+                       , taskDescr = Just "Сделай то, сделай это"
                        }
     t111 <- insert task111
 
@@ -214,6 +217,7 @@ fillDemoRu = do
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
                         , taskOwner = Just empl4
+                        , taskDescr = Just "Сделай то, сделай это"
                         }
     t1111 <- insert task1111
 
@@ -226,6 +230,7 @@ fillDemoRu = do
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t1111
                          , taskOwner = Nothing
+                         , taskDescr = Just "Сделай то, сделай это"
                          }
     t11111 <- insert task11111
 
@@ -237,6 +242,7 @@ fillDemoRu = do
                        , prjStart = addUTCTime ((-50) * oneDayTime) now
                        , prjEnd = addUTCTime (30 * oneDayTime) now
                        , prjManager = Just empl2
+                       , prjDescr = Just "Это проект №002 с кодом П002."
                        }
 
     p2 <- insert prj2
@@ -250,6 +256,7 @@ fillDemoRu = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       , taskOwner = Just empl3
+                      , taskDescr = Just "Сделай то, сделай это"
                       }
                  
     t21 <- insert task21
@@ -263,6 +270,7 @@ fillDemoRu = do
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t21
                        , taskOwner = Just empl4
+                       , taskDescr = Just "Сделай то, сделай это"
                        }
     t211 <- insert task211
 
@@ -275,6 +283,7 @@ fillDemoRu = do
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t211
                         , taskOwner = Just empl1
+                        , taskDescr = Just "Сделай то, сделай это"
                         }
     t2111 <- insert task2111
 
@@ -287,6 +296,7 @@ fillDemoRu = do
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t2111
                          , taskOwner = Just empl1
+                         , taskDescr = Just "Сделай то, сделай это"
                          }
     t21111 <- insert task21111
 
@@ -297,6 +307,7 @@ fillDemoRu = do
                        , prjStart = addUTCTime ((-40) * oneDayTime) now
                        , prjEnd = addUTCTime (60 * oneDayTime) now
                        , prjManager = Nothing
+                       , prjDescr = Just "Это проект №003 с кодом П003."
                        }
 
     return ()

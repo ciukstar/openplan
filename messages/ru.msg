@@ -1,3 +1,17 @@
+PartiallyCompleted: Частично выполнено
+MarkTaskAsPartiallyCompleted: Отметить задачу как частично выполненную
+NotCompleted: Не выполнена
+MarkTaskAsNotCompleted: Отметить задачу как невыполненную
+CompleteTheTask: Завершить задачу
+MarkTaskAsComplete: Отметить задачу как выполненную
+You: Вы
+NoTasksToManageYet: Пока нет задач для управления
+NotAuthorized: Не разрешено
+LoginToAccessPlease: Пожалуйста, войдите в систему, чтобы получить доступ к этой странице
+TaskManagement: Управление задачами
+NoDescriptionGiven: Описание не предоставлено
+TotalTasks: Всего задач
+TotalProjects: Всего проектов
 NoTasksWereFoundForSearchTerms: Не найдено ни одной задачи, содержащей все ваши условия поиска
 Deadline: Крайний срок
 CompletionDate: Срок выполнения
@@ -133,4 +147,4 @@ Username: Логин
 SignOut: Выйти
 SignIn: Войти
 Home: Главная
-AppName: ТТ
+AppName: OpenPlan

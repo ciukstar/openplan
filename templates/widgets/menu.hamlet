@@ -18,6 +18,11 @@
       <i>home
       <span>_{MsgHome}
 
+    $maybe Entity eid _ <- empl 
+      <a href=@{DataR $ AdminTasksR eid} :curr == Just (DataR $ AdminTasksR eid):.active>
+        <i>task_alt
+        <span>_{MsgTaskManagement}
+
     <a href=@{DataR PrjsR} :curr == Just (DataR PrjsR):.active>
       <i>event_note
       <span>_{MsgPlanning}

@@ -130,6 +130,9 @@ msgError = "error"
 keyThemeMode :: Text
 keyThemeMode = "booklib_theme_mode"
 
+paramTaskStatus :: Text
+paramTaskStatus = "status"
+
 paramUserId :: Text
 paramUserId = "uid"
 

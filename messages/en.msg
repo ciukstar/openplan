@@ -1,3 +1,17 @@
+PartiallyCompleted: Partially completed
+MarkTaskAsPartiallyCompleted: Mark task as partially completed
+NotCompleted: Not completed
+MarkTaskAsNotCompleted: Mark task as not completed
+CompleteTheTask: Complete the task
+MarkTaskAsComplete: Mark task as complete
+You: You
+NoTasksToManageYet: There are no tasks to manage yet
+NotAuthorized: Not authorized
+LoginToAccessPlease: Please login to access this page
+TaskManagement: Task Management
+NoDescriptionGiven: No description given
+TotalTasks: Total tasks
+TotalProjects: Total projects
 NoTasksWereFoundForSearchTerms: No tasks were found containing all your search terms
 Deadline: Deadline
 CompletionDate: Completion date

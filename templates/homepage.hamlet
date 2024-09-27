@@ -9,16 +9,20 @@
   $maybe _ <- user
     <article.margin>
       <div.row>
-        <i.circle.extra>task
+        <i.circle.extra style="align-self:flex-start">
+          task
         <div.max>
           <h5>_{MsgMyTasks}
           
           <form method=get action=@{HomeR}>
             $forall (status,label) <- taskStati
-              $with selected <- elem status stati
-                <button.chip.round.tiny-margin type=submit name=status value=#{show status} :selected:.fill>
-                  $if selected
-                    <i>done
+              $if elem status stati
+                <button.chip.fill.round.tiny-margin type=submit>
+                  <i>done
+                  <span>_{label}
+                  
+              $else
+                <button.chip.round.tiny-margin type=submit name=#{paramTaskStatus} value=#{show status}>
                   <span>_{label}
 
           $if null tasks
@@ -26,7 +30,7 @@
               _{MsgNoTasksWereFoundForSearchTerms}.
                 
           $else
-            $forall (Entity _ (Task _ _ tname _ end status _ _ _),Entity _ (Prj _ _ pname _ _ _ _)) <- tasks
+            $forall (Entity _ (Task _ _ tname _ end status _ _ _ descr),Entity _ (Prj _ _ pname _ _ _ _ _)) <- tasks
               <details.margin>
                 <summary>
                   #{tname}
@@ -63,17 +67,47 @@
                         _{MsgProject}
                       <td.max>
                         #{pname}
+
+                    <tr>
+                      <th.no-wrap scope=row>
+                        _{MsgDescription}
+                      <td.max>
+                        $maybe descr <- descr
+                          #{descr}
+                        $nothing
+                          <span.italic>_{MsgNoDescriptionGiven}
                 
           
     <article.margin>
       <div.row>
-        <i.circle.extra>event_note
+        <i.circle.extra style="align-self:flex-start">
+          event_note
         <div.max>
           <h5>_{MsgStatistics}
           <p>
-            _{MsgNumberOfProjects}: #{nprjs}
-          <p>
-            _{MsgNumberOfTasks}: #{ntasks}
+            _{MsgTotalProjects}: #{nprjs}
+            
+          <details open>
+            <summary>
+              _{MsgTotalTasks}: #{sum (snd <$> taskStats)}
+            <table>
+              <tbody>
+                $forall (status,n) <- taskStats
+                  <tr>
+                    <th scope=row>
+                      $case status
+                        $of TaskStatusNotStarted
+                          _{MsgTaskStatusNotStarted}
+                        $of TaskStatusInProgress
+                          _{MsgTaskStatusInProgress}
+                        $of TaskStatusCompleted
+                          _{MsgTaskStatusCompleted}
+                        $of TaskStatusUncompleted
+                          _{MsgTaskStatusUncompleted}
+                        $of TaskStatusPartiallyCompleted
+                          _{MsgTaskStatusPartiallyCompleted}
+                    <td>
+                      #{n}
           
       <nav>
         <a.button href=@{DataR PrjsR}>
@@ -82,7 +116,8 @@
   $nothing
     <article.margin>
       <div.row>
-        <i.circle.extra>task_alt
+        <i.circle.extra style="align-self:flex-start">
+          task
         <div.max>
           <h5>_{MsgMyTasks}
 
@@ -97,13 +132,32 @@
                 
     <article.margin>
       <div.row>
-        <i.circle.extra>event_note
+        <i.circle.extra style="align-self:flex-start">
+          event_note
         <div.max>
           <h5>_{MsgStatistics}
           <p>
-            _{MsgNumberOfProjects}: #{nprjs}
+            _{MsgTotalProjects}: #{nprjs}
           <p>
-            _{MsgNumberOfTasks}: #{ntasks}
+            _{MsgTotalTasks}: #{sum (snd <$> taskStats)}
+            <table>
+              <tbody>
+                $forall (status,n) <- taskStats
+                  <tr>
+                    <th scope=row>
+                      $case status
+                        $of TaskStatusNotStarted
+                          _{MsgTaskStatusNotStarted}
+                        $of TaskStatusInProgress
+                          _{MsgTaskStatusInProgress}
+                        $of TaskStatusCompleted
+                          _{MsgTaskStatusCompleted}
+                        $of TaskStatusUncompleted
+                          _{MsgTaskStatusUncompleted}
+                        $of TaskStatusPartiallyCompleted
+                          _{MsgTaskStatusPartiallyCompleted}
+                    <td>
+                      #{n}
 
           <p>
             <label.italic>_{MsgLoginForMoreDetailsPlease}

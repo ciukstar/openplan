@@ -1,0 +1,7 @@
+
+dl dd
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    margin-bottom: 1rem
+    margin-left: 1rem

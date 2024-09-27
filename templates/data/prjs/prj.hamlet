@@ -12,7 +12,7 @@
 
   <div.page.active>
 
-    $maybe ((Entity _ (Prj _ code name location start end _),outlet),(manager,user)) <- prj
+    $maybe ((Entity _ (Prj _ code name location start end _ descr),outlet),(manager,user)) <- prj
       <dl.margin>
         <dt>
           <label.bold.large-text>_{MsgCode}
@@ -49,6 +49,14 @@
             $with dt <- fmt end
               <time.daytime datetime=#{dt}>
                 #{dt}
+      
+        <dt>
+          <label.bold.large-text>_{MsgDescription}
+        <dd.margin>
+          $maybe descr <- descr
+            #{descr}
+          $nothing
+            <span.italic>_{MsgNoDescriptionGiven}
 
         <dt>
           <label.bold.large-text>_{MsgProjectManager}

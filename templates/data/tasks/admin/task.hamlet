@@ -1,0 +1,124 @@
+
+^{widgetTopbar (Just $ (DataR $ AdminTasksR eid,[])) (msgr MsgTask) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  $maybe ((((Entity _ (Task _ _ name start end status _ _ _ descr),project),dept),(owner,user)),(manager,muser)) <- task
+
+    <button title=_{MsgMarkTaskAsComplete}>
+      _{MsgCompleteTheTask}
+      
+    <button.tertiary title=_{MsgMarkTaskAsPartiallyCompleted}>
+      _{MsgPartiallyCompleted}
+      
+    <button.error title=_{MsgMarkTaskAsNotCompleted}>
+      <i>thumb_down
+      _{MsgNotCompleted}
+
+    <dl.margin>
+
+      <dt>
+        <label.bold.large-text>_{MsgName}
+      <dd>
+        #{name}
+
+      <dt>
+        <label.bold.large-text>_{MsgDescription}
+      <dd>
+        $maybe descr <- descr
+          #{descr}
+        $nothing
+          <span.italic>_{MsgNoDescriptionGiven}
+
+      $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+        <dt>
+          <label.bold.large-text>_{MsgStart}
+        <dd>
+          $with dt <- fmt start
+            <time.daytime datetime=#{dt}>
+              #{dt}
+
+        <dt>
+          <label.bold.large-text>_{MsgEnd}
+        <dd>
+          $with dt <- fmt end
+            <time.daytime datetime=#{dt}>
+              #{dt}
+
+      <dt>
+        <label.bold.large-text>_{MsgTaskStatus}
+      <dd>
+        $case status
+          $of TaskStatusNotStarted
+            _{MsgTaskStatusNotStarted}
+          $of TaskStatusInProgress
+            _{MsgTaskStatusInProgress}
+          $of TaskStatusCompleted
+            _{MsgTaskStatusCompleted}
+          $of TaskStatusUncompleted
+            _{MsgTaskStatusUncompleted}
+          $of TaskStatusPartiallyCompleted
+            _{MsgTaskStatusPartiallyCompleted}
+
+      <dt>
+        <label.bold.large-text>_{MsgProject}
+      <dd>
+        $with Entity _ (Prj _ _ pname _ _ _ _ _) <- project
+          #{pname}
+          
+      <dt>
+        <label.bold.large-text>_{MsgDepartment}
+      <dd>
+        $with Entity _ (Dept _ dname _) <- dept
+          #{dname}
+
+      <dt>
+        <label.bold.large-text>_{MsgTaskOwner}
+      <dd>
+        <div.row>
+          $maybe Entity oid (Empl uid _ position _) <- owner
+            <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+            <div.max>
+              <div>
+                $maybe Entity _ (User email _ name _) <- user
+                  $maybe name <- name
+                    #{name}
+                  $nothing
+                    #{email}
+                    
+                $if oid == eid
+                  \ (_{MsgYou})
+
+              <label>
+                #{position}
+
+          $nothing
+            <span.italic>_{MsgNotAppointedYet}
+
+      <dt>
+        <label.bold.large-text>_{MsgProjectManager}
+      <dd>
+        <div.row>
+          $maybe Entity mid (Empl uid _ position _) <- manager
+            <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+            <div.max>
+              <div>
+                $maybe Entity _ (User email _ name _) <- muser
+                  $maybe name <- name
+                    #{name}
+                  $nothing
+                    #{email}
+                    
+                $if mid == eid
+                  \ (_{MsgYou})
+
+              <label>
+                #{position}
+
+          $nothing
+            <span.italic>_{MsgNotAppointedYet}
+
+
+
+
+^{widgetSnackbar msgs}

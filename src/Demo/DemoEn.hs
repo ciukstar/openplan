@@ -19,10 +19,10 @@ import Model
       ( UserPhoto, userPhotoUser, userPhotoMime, userPhotoPhoto, userPhotoAttribution)
     , Dept (Dept, deptCode, deptName, deptParent)
     , Outlet (Outlet, outletName, outletDescr)
-    , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager)
+    , Prj (prjOutlet, Prj, prjCode, prjName, prjLocation, prjStart, prjEnd, prjManager, prjDescr)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration, taskParent
-      , taskStatus, taskOwner
+      , taskStatus, taskOwner, taskDescr
       )
     , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted)
     , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
@@ -170,11 +170,12 @@ fillDemoEn = do
 
     let prj1 = Prj { prjOutlet = pt1
                    , prjCode = "P001"
-                   , prjName = "Project #01"
+                   , prjName = "Project #001"
                    , prjLocation = "1485 NW Street St Wilson WY 83014"
                    , prjStart = addUTCTime ((-30) * oneDayTime) now
                    , prjEnd = addUTCTime (40 * oneDayTime) now
                    , prjManager = Just empl1
+                   , prjDescr = Just "This is the Project #001 with the code P001"
                    }
 
     p1 <- insert prj1
@@ -188,6 +189,7 @@ fillDemoEn = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       , taskOwner = Just empl2
+                      , taskDescr = Just "Do that, do this"
                       }
 
     t11 <- insert task11
@@ -201,6 +203,7 @@ fillDemoEn = do
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t11
                        , taskOwner = Just empl3
+                       , taskDescr = Just "Do that, do this"
                        }
     t111 <- insert task111
 
@@ -213,6 +216,7 @@ fillDemoEn = do
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
                         , taskOwner = Just empl4
+                        , taskDescr = Just "Do that, do this"
                         }
 
     t1111 <- insert task1111
@@ -226,6 +230,7 @@ fillDemoEn = do
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t1111
                          , taskOwner = Nothing
+                         , taskDescr = Just "Do that, do this"
                          }
     t11111 <- insert task11111
 
@@ -236,6 +241,7 @@ fillDemoEn = do
                    , prjStart = addUTCTime ((-40) * oneDayTime) now
                    , prjEnd = addUTCTime (50 * oneDayTime) now
                    , prjManager = Just empl2
+                   , prjDescr = Just "This is the Project #002 with the code P002"
                    }
 
     p2 <- insert prj2
@@ -249,6 +255,7 @@ fillDemoEn = do
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       , taskOwner = Just empl3
+                      , taskDescr = Just "Do that, do this"
                       }
 
     t21 <- insert task21
@@ -262,6 +269,7 @@ fillDemoEn = do
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t21
                        , taskOwner = Just empl3
+                       , taskDescr = Just "Do that, do this"
                        }
     t211 <- insert task211
 
@@ -274,6 +282,7 @@ fillDemoEn = do
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t211
                         , taskOwner = Just empl4
+                        , taskDescr = Just "Do that, do this"
                         }
     t2111 <- insert task2111
 
@@ -286,6 +295,7 @@ fillDemoEn = do
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t2111
                          , taskOwner = Just empl1
+                         , taskDescr = Just "Do that, do this"
                          }
     t21111 <- insert task21111
 
@@ -296,6 +306,7 @@ fillDemoEn = do
                        , prjStart = addUTCTime ((-45) * oneDayTime) now
                        , prjEnd = addUTCTime (65 * oneDayTime) now
                        , prjManager = Nothing
+                       , prjDescr = Just "This is the Project #002 with the code P003"
                        }
 
     return ()

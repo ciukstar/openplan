@@ -11,7 +11,7 @@
           <p>_{MsgPleaseAddIfNecessary}.
           
     $else
-      $forall (Entity pid (Prj _ code name _ start end _),(manager,user)) <- prjs
+      $forall (Entity pid (Prj _ code name _ start end _ _),(manager,user)) <- prjs
         $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
           <a.row.padding.surface-container.wave href=@{DataR $ PrjR pid}>
 

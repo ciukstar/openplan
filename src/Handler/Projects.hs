@@ -23,7 +23,8 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&))
-    , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just, subSelectList
+    , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just
+    , subSelectList
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
@@ -42,11 +43,11 @@ import Foundation
       , MsgProjects, MsgProject, MsgNoProjectsYet, MsgPleaseAddIfNecessary
       , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgTasks
       , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
-      , MsgPhoto, MsgManagerNotAssigned, MsgTeam
+      , MsgPhoto, MsgManagerNotAssigned, MsgTeam, MsgDescription, MsgNoDescriptionGiven
       )
     )
 
-import Material3 (md3widget, md3selectWidget, daytimeLocalField)
+import Material3 (md3widget, md3selectWidget, daytimeLocalField, md3textareaWidget)
 
 import Model
     ( msgSuccess, msgError
@@ -55,7 +56,7 @@ import Model
     , PrjId
     , Prj
       ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
-      , prjManager
+      , prjManager, prjDescr
       )
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
@@ -73,7 +74,7 @@ import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
-    ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList))
+    ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList), textareaField)
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
@@ -206,10 +207,16 @@ formProject prj extra = do
         , fsAttrs = []
         } (prjManager . entityVal <$> prj)
 
+    (descrR,descrV) <- mopt textareaField FieldSettings
+        { fsLabel = SomeMessage MsgDescription
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+        , fsAttrs = []
+        } (prjDescr . entityVal <$> prj)
+
     let r = Prj <$> typeR <*> codeR <*> nameR <*> locationR
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
-            <*> managerR
+            <*> managerR <*> descrR
 
     let w = $(widgetFile "data/prjs/form") 
     return (r,w)

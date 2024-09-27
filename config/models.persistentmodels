@@ -13,6 +13,7 @@ Task
     duration NominalDiffTime Maybe
     parent TaskId Maybe OnDeleteCascade
     owner EmplId Maybe OnDeleteSetNull
+    descr Textarea Maybe
 
 
 Prj sql=project
@@ -23,6 +24,7 @@ Prj sql=project
     start UTCTime
     end UTCTime
     manager EmplId Maybe OnDeleteSetNull
+    descr Textarea Maybe
     UniquePrj code
 
 

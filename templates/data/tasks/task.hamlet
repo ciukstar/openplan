@@ -11,7 +11,7 @@
 
   <div.page.active>
 
-    $maybe (((Entity _ (Task _ _ name start end status _ _ _),Entity _ (Dept _ dname _)),parent),(owner,user)) <- task
+    $maybe (((Entity _ (Task _ _ name start end status _ _ _ descr),Entity _ (Dept _ dname _)),parent),(owner,user)) <- task
 
       <dl.margin>
       
@@ -24,6 +24,14 @@
           <label.bold.large-text>_{MsgName}
         <dd.margin>
           #{name}
+      
+        <dt>
+          <label.bold.large-text>_{MsgDescription}
+        <dd.margin>
+          $maybe descr <- descr
+            #{descr}
+          $nothing
+            <span.italic>_{MsgNoDescriptionGiven}
 
         <dt>
           <label.bold.large-text>_{MsgStart}
@@ -62,7 +70,7 @@
         <dt>
           <label.bold.large-text>_{MsgPreviousTask}
         <dd.margin>
-          $maybe Entity _ (Task _ _ name _ _ _ _ _ _) <- parent
+          $maybe Entity _ (Task _ _ name _ _ _ _ _ _ _) <- parent
             #{name}
           $nothing
             <span.italic>_{MsgFirstTaskInSequence}

@@ -57,6 +57,7 @@ import Handler.Tasks
     ( getTasksR, postTasksR
     , getTaskR, postTaskR
     , getTaskNewR, getTaskEditR, postTaskDeleR
+    , getAdminTasksR, getAdminTaskR
     )
 
 import Handler.Projects 

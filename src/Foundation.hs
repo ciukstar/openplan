@@ -22,7 +22,7 @@ import qualified Data.Text as T (intercalate)
 import qualified Data.Text.Encoding as TE
 
 import Database.Esqueleto.Experimental
-    ( selectOne, from, table, where_, val, (^.), select )
+    ( selectOne, from, table, where_, val, (^.), select, just )
 import qualified Database.Esqueleto.Experimental as E ((==.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
@@ -76,6 +76,15 @@ type DB a = forall (m :: Type -> Type).
     (MonadUnliftIO m) => ReaderT SqlBackend m a
 
 
+taskStati :: [(TaskStatus, AppMessage)]
+taskStati = [ (TaskStatusNotStarted,MsgTaskStatusNotStarted)
+            , (TaskStatusInProgress,MsgTaskStatusInProgress)
+            , (TaskStatusCompleted,MsgTaskStatusCompleted)
+            , (TaskStatusUncompleted,MsgTaskStatusUncompleted)
+            , (TaskStatusPartiallyCompleted,MsgTaskStatusPartiallyCompleted)
+            ]
+
+
 widgetTopbar :: Maybe (Route App,[(Text,Text)]) -- ^ Back button
              -> Text                            -- ^ Title 
              -> Text                            -- ^ Overlay id
@@ -105,6 +114,14 @@ widgetMainMenuTrigger idOverlay idDialogMainMenu = $(widgetFile "widgets/trigger
 
 widgetMainMenu :: Text -> Text -> Widget
 widgetMainMenu idOverlay idDialogMainMenu = do
+
+    uid <- maybeAuthId
+    
+    empl  <- liftHandler $ runDB $ selectOne $ do
+        x <- from $ table @Empl
+        where_ $ just (x ^. EmplUser) E.==. val uid
+        return x
+    
     curr <- getCurrentRoute
     idButtonMainMenuClose <- newIdent
     $(widgetFile "widgets/menu")
@@ -203,6 +220,10 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
+
+    
+    isAuthorized (DataR (AdminTaskR eid _)) _ = setUltDestCurrent >> isEmployeeSelf eid
+    isAuthorized (DataR (AdminTasksR eid)) _ = setUltDestCurrent >> isEmployeeSelf eid
 
     isAuthorized (DataR (TaskDeleR {})) _ = isAuthenticated
     isAuthorized (DataR (TaskEditR {})) _ = isAuthenticated
@@ -384,6 +405,22 @@ formLogin route = do
     $(widgetFile "auth/form")
 
 
+isEmployeeSelf :: EmplId -> Handler AuthResult
+isEmployeeSelf eid = do
+    user <- maybeAuth
+    case user of
+        Just (Entity uid _) -> do
+            empl <- runDB $ selectOne $ do
+                x <- from $ table @Empl
+                where_ $ x ^. EmplUser E.==. val uid
+                return x
+            case empl of
+              Just (Entity eid' _) | eid' == eid -> return Authorized
+                                   | otherwise -> unauthorizedI MsgNotAuthorized
+              Nothing -> unauthorizedI MsgNotAuthorized
+        Nothing -> unauthorizedI MsgLoginPlease
+
+
 isAdmin :: Handler AuthResult
 isAdmin = do
     user <- maybeAuth
@@ -407,9 +444,9 @@ isAdministrator = do
 isAuthenticated :: Handler AuthResult
 isAuthenticated = do
     muid <- maybeAuthId
-    return $ case muid of
-        Nothing -> Unauthorized "You must login to access this page"
-        Just _ -> Authorized
+    case muid of
+        Nothing -> unauthorizedI MsgLoginToAccessPlease
+        Just _ -> return Authorized
 
 
 

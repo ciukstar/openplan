@@ -9,37 +9,39 @@ module Handler.Tasks
   ( getTasksR, postTasksR
   , getTaskR, postTaskR
   , getTaskNewR, getTaskEditR, postTaskDeleR
+  , getAdminTasksR, getAdminTaskR
   ) where
 
 import ClassyPrelude (readMay)
 
 import Control.Applicative ((<|>)) 
-import Control.Monad (void, forM)
+import Control.Monad (void, forM, unless)
 
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Text (Text, pack)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
-    , (^.), (?.), (==.), (:&)((:&))
+    , (^.), (?.), (==.), (:&)((:&)), (||.)
     , isNothing_, Value (unValue), innerJoin, leftJoin, on, just
+    , valList, in_, not_
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
-    ( Handler, Widget, Form, widgetSnackbar, widgetTopbar
+    ( Handler, Widget, Form, widgetSnackbar, widgetTopbar, taskStati
     , Route (DataR)
     , DataR
       ( TasksR, TaskR, TaskNewR, TaskEditR, TaskDeleR, PrjR, PrjsR
-      , UserPhotoR, PrjTeamR
+      , UserPhotoR, PrjTeamR, AdminTasksR, AdminTaskR
       )
     , AppMessage
-      ( MsgTasks, MsgTask, MsgSave, MsgCancel, MsgAlreadyExists
+      ( MsgTasks, MsgTask, MsgSave, MsgCancel, MsgAlreadyExists, MsgYou
       , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgDele, MsgNoSubtasksYet
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgTeam, MsgTaskOwner
@@ -48,28 +50,33 @@ import Foundation
       , MsgTaskStatusCompleted, MsgTaskStatusInProgress, MsgTaskStatusUncompleted
       , MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgPreviousTask
       , MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner
-      , MsgOwnerNotAssigned
+      , MsgOwnerNotAssigned, MsgDescription, MsgNoDescriptionGiven
+      , MsgNoTasksToManageYet, MsgNoTasksWereFoundForSearchTerms
+      , MsgMarkTaskAsComplete, MsgCompleteTheTask, MsgMarkTaskAsNotCompleted
+      , MsgNotCompleted, MsgMarkTaskAsPartiallyCompleted, MsgPartiallyCompleted
+      , MsgProjectManager
       )
     )
     
-import Material3 (md3widget, daytimeLocalField, md3selectWidget)
+import Material3 (md3widget, daytimeLocalField, md3selectWidget, md3textareaWidget)
 
 import Model
-    ( msgSuccess, msgError, Tasks (Tasks)
-    , PrjId, Dept (Dept)
-    , TaskId
+    ( msgSuccess, msgError, paramTaskStatus
+    , PrjId, Prj (Prj), User (User), Dept (Dept)
+    , EmplId, Empl (Empl)
+    , TaskId, Tasks (Tasks)
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
-      , taskOwner
+      , taskOwner, taskDescr
       )
     , TaskStatus
       ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
       , TaskStatusUncompleted, TaskStatusPartiallyCompleted
       )
-    , Empl (Empl), User (User)
     , EntityField
       ( TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId, TaskDept
-      , EmplUser, UserId, UserName, UserEmail, EmplId, TaskOwner
+      , EmplUser, UserId, UserName, UserEmail, EmplId, TaskOwner, PrjId
+      , PrjManager, TaskStatus
       )
     )
 
@@ -86,7 +93,7 @@ import Yesod.Core.Handler
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
     ( selectField, optionsPairs, Option (Option), OptionList (OptionList)
-    , textField
+    , textField, textareaField
     )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
@@ -94,6 +101,52 @@ import Yesod.Form.Types
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
+
+
+getAdminTaskR :: EmplId -> TaskId -> Handler Html
+getAdminTaskR eid tid = do
+    
+    task <- runDB $ selectOne $ do
+        x :& d :& o :& uo :& p :& m :&  um <- from $ table @Task
+            `innerJoin` table @Dept `on` (\(x :& d) -> x ^. TaskDept ==. d ^. DeptId)
+            `leftJoin` table @Empl `on` (\(x :& _ :& o) -> x ^. TaskOwner ==. o ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& _  :& o :& u) -> o ?. EmplUser ==. u ?. UserId)
+            `innerJoin` table @Prj `on` (\(x :& _  :& _ :& _ :& p) -> x ^. TaskPrj ==. p ^. PrjId)
+            `leftJoin` table @Empl `on` (\(_ :& _ :& _ :& _ :& p :& m) -> p ^. PrjManager ==. m ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& _ :& _ :& _ :& _ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
+        where_ $ x ^. TaskId ==. val tid
+        return ((((x,p),d),(o,uo)),(m,um))
+
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgTask 
+        idOverlay <- newIdent
+        $(widgetFile "data/tasks/admin/task")
+
+
+getAdminTasksR :: EmplId -> Handler Html
+getAdminTasksR eid = do
+
+    stati <- mapMaybe readMay <$> lookupGetParams paramTaskStatus
+
+    tasks <- runDB $ select $ do
+        x :& p :& o :& u <- from $ table @Task
+            `innerJoin` table @Prj `on` (\(x :& p) -> x ^. TaskPrj ==. p ^. PrjId)
+            `leftJoin` table @Empl `on` (\(x :& _ :& o) -> x ^. TaskOwner ==. o ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& _  :& o :& u) -> o ?. EmplUser ==. u ?. UserId)
+            
+        where_ $ not_ $ isNothing_ $ x ^. TaskOwner
+        where_ $ ( p ^. PrjManager ==. just (val eid) ) ||. ( x ^. TaskOwner ==. just (val eid) )
+        unless (null stati) $ where_ $ x ^. TaskStatus `in_` valList stati
+        return ((x,p),(o,u))
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgTasks 
+        idOverlay <- newIdent
+        $(widgetFile "data/tasks/admin/tasks")
 
 
 postTaskDeleR :: PrjId -> TaskId -> Tasks -> Handler Html
@@ -200,10 +253,17 @@ formTask prjId did task extra = do
         , fsAttrs = []
         } (taskOwner . entityVal <$> task)
 
+    (descrR,descrV) <- mopt textareaField  FieldSettings
+        { fsLabel = SomeMessage MsgDescription
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+        , fsAttrs = []
+        } (taskDescr . entityVal <$> task)
+
     let r = Task prjId <$> deptR<*> nameR 
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
-            <*> statusR <*> pure Nothing <*> parentR <*> ownerR
+            <*> statusR <*> pure Nothing
+            <*> parentR <*> ownerR <*> descrR
 
     let w = $(widgetFile "data/tasks/form")
     return (r,w)
@@ -353,7 +413,7 @@ buildSnippet :: PrjId -> [Text] -> Maybe TaskId -> Tasks -> TaskTree -> Widget
 buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
     [whamlet|
       <div>
-        $forall ((Entity tid (Task _ _ name start end status _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
+        $forall ((Entity tid (Task _ _ name start end status _ _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
           $with (pid,level) <- (pack $ show $ fromSqlKey tid,length tids + 1)
             $if (length subtasks) > 0
               <hr>

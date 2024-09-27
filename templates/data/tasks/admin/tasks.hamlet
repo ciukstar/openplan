@@ -1,0 +1,77 @@
+
+^{widgetTopbar Nothing (msgr MsgTasks) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <form method=get action=@{DataR $ AdminTasksR eid}>
+    $forall (status,label) <- taskStati
+      $if elem status stati
+        <button.chip.fill.round.small-margin type=submit>
+          <i>done
+          <span>_{label}
+
+      $else
+        <button.chip.round.tiny-margin type=submit name=#{paramTaskStatus} value=#{show status}>
+          <span>_{label}
+
+  $if null tasks
+    <figure style="text-align:center">
+      <div style="font-size:4rem;line-height:2">&#x1F4C2;
+      <figcaption>
+        $if null stati
+          <p>_{MsgNoTasksToManageYet}.
+        $else
+          <p>
+            _{MsgNoTasksWereFoundForSearchTerms}.
+
+  $else
+    $forall ((Entity tid (Task _ _ name start end status _ _ _ _),project),(owner,user)) <- tasks
+      <a.row.padding.surface-container.wave href=@{DataR $ AdminTaskR eid tid}>
+
+        <div.max>
+          <h6.small>
+            #{name}
+
+          <div.bold>
+            $case status
+              $of TaskStatusNotStarted
+                _{MsgTaskStatusNotStarted}
+              $of TaskStatusInProgress
+                _{MsgTaskStatusInProgress}
+              $of TaskStatusCompleted
+                _{MsgTaskStatusCompleted}
+              $of TaskStatusUncompleted
+                _{MsgTaskStatusUncompleted}
+              $of TaskStatusPartiallyCompleted
+                _{MsgTaskStatusPartiallyCompleted}
+
+          <label>
+            $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+              <time.daytime datetime=#{fmt start}>
+                #{fmt start}
+              &mdash;
+              <time.daytime datetime=#{fmt end}>
+                #{fmt end}
+
+          <div.row>
+            $maybe Entity oid (Empl uid _ _ _) <- owner
+              <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+              <div.max>
+                <label>
+                  _{MsgOwner}
+
+                  $if eid == oid
+                    \ (_{MsgYou})
+
+                <div>
+                  $maybe Entity _ (User email _ name _) <- user
+                    $maybe name <- name
+                      #{name}
+                    $nothing
+                      #{email}
+
+        <i>arrow_forward_ios
+
+      <hr>
+
+  ^{widgetSnackbar msgs}
