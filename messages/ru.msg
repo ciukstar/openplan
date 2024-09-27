@@ -1,3 +1,7 @@
+StateMachineDiagram: Схема машины состояний
+TaskStatusStateTransition: Переход состояния для статуса задачи
+BasicEntities: Базовые сущности
+TaskStatusPaused: Приостановлено
 PartiallyCompleted: Частично выполнено
 MarkTaskAsPartiallyCompleted: Отметить задачу как частично выполненную
 NotCompleted: Не выполнена

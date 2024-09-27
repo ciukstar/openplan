@@ -33,7 +33,7 @@ import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
-    ( Handler, Form, widgetSnackbar, widgetTopbar
+    ( Handler, Form, widgetSnackbar, widgetTopbar, msgTaskStatus
     , Route (DataR, StaticR)
     , DataR
       ( EmplsR, EmplR, EmplNewR, EmplEditR, EmplDeleR, DeptsR, DeptR
@@ -47,9 +47,6 @@ import Foundation
       , MsgRecordEdited, MsgNoEmployeesInThisDepartmentYet
       , MsgDepartment, MsgJobTitle, MsgAppointmentDate, MsgUser
       , MsgProjects, MsgTasks, MsgNoProjectsYet, MsgNoTasksYet
-      , MsgTaskStatusCompleted, MsgTaskStatusInProgress
-      , MsgTaskStatusNotStarted, MsgTaskStatusPartiallyCompleted
-      , MsgTaskStatusUncompleted
       )
     )
 
@@ -63,10 +60,6 @@ import Model
     , EntityField
       ( EmplId, EmplDept, EmplUser, UserId, UserName, UserEmail, PrjManager
       , PrjId, TaskOwner
-      )
-    , TaskStatus
-      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
-      , TaskStatusUncompleted, TaskStatusPartiallyCompleted
       )
     )
 

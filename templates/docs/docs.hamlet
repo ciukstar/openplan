@@ -5,8 +5,14 @@
 
   <h1>_{MsgAppName}
 
+  <h2>_{MsgBasicEntities}
   <figure>
     <img src=@{StaticR img_OpenPlan_ERD_svg} alt=_{MsgEntityRelationshipDiagram}>
     <figcaption>_{MsgEntityRelationshipDiagram}
+
+  <h2>_{MsgTaskStatusStateTransition}
+  <figure>
+    <img src=@{StaticR img_Task_status_SMD_svg} alt=_{MsgStateMachineDiagram}>
+    <figcaption>_{MsgStateMachineDiagram}
 
   ^{widgetSnackbar msgs}

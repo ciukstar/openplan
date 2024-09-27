@@ -15,11 +15,12 @@ import Foundation
     , Route (StaticR)
     , AppMessage
       ( MsgAppName, MsgDocumentation, MsgEntityRelationshipDiagram
+      , MsgBasicEntities, MsgTaskStatusStateTransition, MsgStateMachineDiagram
       )
     )
     
 import Settings (widgetFile)
-import Settings.StaticFiles (img_OpenPlan_ERD_svg)
+import Settings.StaticFiles (img_OpenPlan_ERD_svg, img_Task_status_SMD_svg)
 
 
 import Text.Hamlet (Html)

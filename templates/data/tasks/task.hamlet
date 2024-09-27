@@ -50,17 +50,7 @@
         <dt>
           <label.bold.large-text>_{MsgTaskStatus}
         <dd.margin>
-          $case status
-            $of TaskStatusNotStarted
-              _{MsgTaskStatusNotStarted}
-            $of TaskStatusInProgress
-              _{MsgTaskStatusInProgress}
-            $of TaskStatusCompleted
-              _{MsgTaskStatusCompleted}
-            $of TaskStatusUncompleted
-              _{MsgTaskStatusUncompleted}
-            $of TaskStatusPartiallyCompleted
-              _{MsgTaskStatusPartiallyCompleted}
+          _{msgTaskStatus status}
       
         <dt>
           <label.bold.large-text>_{MsgDepartment}

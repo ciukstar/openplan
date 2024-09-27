@@ -76,13 +76,13 @@ type DB a = forall (m :: Type -> Type).
     (MonadUnliftIO m) => ReaderT SqlBackend m a
 
 
-taskStati :: [(TaskStatus, AppMessage)]
-taskStati = [ (TaskStatusNotStarted,MsgTaskStatusNotStarted)
-            , (TaskStatusInProgress,MsgTaskStatusInProgress)
-            , (TaskStatusCompleted,MsgTaskStatusCompleted)
-            , (TaskStatusUncompleted,MsgTaskStatusUncompleted)
-            , (TaskStatusPartiallyCompleted,MsgTaskStatusPartiallyCompleted)
-            ]
+msgTaskStatus :: TaskStatus -> AppMessage
+msgTaskStatus TaskStatusNotStarted = MsgTaskStatusNotStarted
+msgTaskStatus TaskStatusInProgress = MsgTaskStatusInProgress
+msgTaskStatus TaskStatusPaused = MsgTaskStatusPaused
+msgTaskStatus TaskStatusCompleted = MsgTaskStatusCompleted
+msgTaskStatus TaskStatusUncompleted = MsgTaskStatusUncompleted
+msgTaskStatus TaskStatusPartiallyCompleted = MsgTaskStatusPartiallyCompleted
 
 
 widgetTopbar :: Maybe (Route App,[(Text,Text)]) -- ^ Back button

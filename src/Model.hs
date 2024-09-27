@@ -45,7 +45,7 @@ import Database.Persist.Sql (fromSqlKey, toSqlKey, PersistFieldSql, SqlType, sql
 import Database.Persist.Types (SqlType (SqlInt64))
 import Database.Persist.TH (derivePersistField)
 
-import Prelude (fromIntegral, truncate)
+import Prelude (Enum, Bounded, fromIntegral, truncate, minBound, maxBound)
 
 import Text.Hamlet (Html)
 import Text.Read (Read, readMaybe)
@@ -56,12 +56,17 @@ import Yesod.Core.Dispatch (PathMultiPiece, toPathMultiPiece, fromPathMultiPiece
 import Yesod.Form (Textarea)
 
 
-data TaskStatus = TaskStatusNotStarted | TaskStatusInProgress
+data TaskStatus = TaskStatusNotStarted
+                | TaskStatusInProgress
+                | TaskStatusPaused
                 | TaskStatusCompleted
                 | TaskStatusUncompleted
                 | TaskStatusPartiallyCompleted
-    deriving (Show, Read, Eq, Ord)
+    deriving (Show, Read, Eq, Ord, Enum, Bounded)
 derivePersistField "TaskStatus"
+
+taskStati :: [TaskStatus]
+taskStati = [minBound .. maxBound]
 
 
 instance PersistField NominalDiffTime where

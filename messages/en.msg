@@ -1,3 +1,7 @@
+StateMachineDiagram: State machine diagram 
+TaskStatusStateTransition: State transition for task status
+BasicEntities: Basic entities
+TaskStatusPaused: Paused
 PartiallyCompleted: Partially completed
 MarkTaskAsPartiallyCompleted: Mark task as partially completed
 NotCompleted: Not completed

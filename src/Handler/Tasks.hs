@@ -34,7 +34,7 @@ import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
-    ( Handler, Widget, Form, widgetSnackbar, widgetTopbar, taskStati
+    ( Handler, Widget, Form, widgetSnackbar, widgetTopbar, msgTaskStatus
     , Route (DataR)
     , DataR
       ( TasksR, TaskR, TaskNewR, TaskEditR, TaskDeleR, PrjR, PrjsR
@@ -46,9 +46,8 @@ import Foundation
       , MsgConfirmPlease, MsgProperties, MsgDele, MsgNoSubtasksYet
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgTeam, MsgTaskOwner
       , MsgRecordEdited, MsgSubtasks, MsgNoTasksForThisProjectYet, MsgSequence
-      , MsgStart, MsgEnd, MsgDepartment, MsgProject, MsgTaskStatusNotStarted
-      , MsgTaskStatusCompleted, MsgTaskStatusInProgress, MsgTaskStatusUncompleted
-      , MsgTaskStatusPartiallyCompleted, MsgTaskStatus, MsgPreviousTask
+      , MsgStart, MsgEnd, MsgDepartment, MsgProject
+      , MsgTaskStatus, MsgPreviousTask
       , MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner
       , MsgOwnerNotAssigned, MsgDescription, MsgNoDescriptionGiven
       , MsgNoTasksToManageYet, MsgNoTasksWereFoundForSearchTerms
@@ -61,17 +60,13 @@ import Foundation
 import Material3 (md3widget, daytimeLocalField, md3selectWidget, md3textareaWidget)
 
 import Model
-    ( msgSuccess, msgError, paramTaskStatus
+    ( msgSuccess, msgError, paramTaskStatus, taskStati
     , PrjId, Prj (Prj), User (User), Dept (Dept)
     , EmplId, Empl (Empl)
     , TaskId, Tasks (Tasks)
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
       , taskOwner, taskDescr
-      )
-    , TaskStatus
-      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
-      , TaskStatusUncompleted, TaskStatusPartiallyCompleted
       )
     , EntityField
       ( TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId, TaskDept
@@ -290,12 +285,7 @@ formTask prjId did task extra = do
               Just (Entity tid'' _) | tid' == tid'' -> Right name
                                     | otherwise -> Left MsgAlreadyExists
 
-      statusOptions = [ (MsgTaskStatusNotStarted,TaskStatusNotStarted)
-                      , (MsgTaskStatusInProgress,TaskStatusInProgress)
-                      , (MsgTaskStatusCompleted,TaskStatusCompleted)
-                      , (MsgTaskStatusUncompleted,TaskStatusUncompleted)
-                      , (MsgTaskStatusPartiallyCompleted,TaskStatusPartiallyCompleted)
-                      ]
+      statusOptions = (\x -> (msgTaskStatus x,x)) <$> taskStati
 
 
 postTaskR :: PrjId -> TaskId -> Tasks -> Handler Html
@@ -432,17 +422,7 @@ buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
                         #{name}
                         
                       <div.bold>
-                        $case status
-                          $of TaskStatusNotStarted
-                            _{MsgTaskStatusNotStarted}
-                          $of TaskStatusInProgress
-                            _{MsgTaskStatusInProgress}
-                          $of TaskStatusCompleted
-                            _{MsgTaskStatusCompleted}
-                          $of TaskStatusUncompleted
-                            _{MsgTaskStatusUncompleted}
-                          $of TaskStatusPartiallyCompleted
-                            _{MsgTaskStatusPartiallyCompleted}
+                        _{msgTaskStatus status}
                         
                       <label>
                         $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
@@ -489,17 +469,7 @@ buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
                       #{name}
 
                     <div.bold>
-                      $case status
-                        $of TaskStatusNotStarted
-                          _{MsgTaskStatusNotStarted}
-                        $of TaskStatusInProgress
-                          _{MsgTaskStatusInProgress}
-                        $of TaskStatusCompleted
-                          _{MsgTaskStatusCompleted}
-                        $of TaskStatusUncompleted
-                          _{MsgTaskStatusUncompleted}
-                        $of TaskStatusPartiallyCompleted
-                          _{MsgTaskStatusPartiallyCompleted}
+                      _{msgTaskStatus status}
 
                     <label>
                       $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"

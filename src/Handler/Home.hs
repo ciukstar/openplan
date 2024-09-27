@@ -26,26 +26,20 @@ import Database.Esqueleto.Experimental
 import Database.Persist (Entity (Entity), entityKey)
 
 import Foundation
-    ( Handler, widgetSnackbar, widgetTopbar, taskStati
+    ( Handler, widgetSnackbar, widgetTopbar, msgTaskStatus
     , Route(AuthR, HomeR, DataR)
     , DataR (PrjsR)
     , AppMessage
       ( MsgAppName, MsgHome, MsgWelcomeTo, MsgNoDescriptionGiven, MsgDescription
       , MsgSignIn, MsgLoginForMoreDetailsPlease, MsgStatistics, MsgShowProjects
       , MsgMyTasks, MsgLoginToCheckYourTasks, MsgTaskStatus, MsgCompletionDate
-      , MsgProject, MsgTaskStatusPartiallyCompleted, MsgTaskStatusCompleted
-      , MsgTaskStatusInProgress, MsgTaskStatusUncompleted, MsgTotalTasks
-      , MsgTaskStatusInProgress, MsgTaskStatusNotStarted, MsgTotalProjects
-      , MsgNoTasksWereFoundForSearchTerms
+      , MsgTotalTasks, MsgTotalProjects, MsgNoTasksWereFoundForSearchTerms
+      , MsgProject
       )
     )
     
 import Model
-    ( paramTaskStatus, Prj (Prj), Task (Task), Empl
-    , TaskStatus
-      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusCompleted
-      , TaskStatusUncompleted, TaskStatusPartiallyCompleted
-      )
+    ( paramTaskStatus, taskStati, Prj (Prj), Task (Task), Empl
     , EntityField (TaskOwner, EmplId, EmplUser, TaskPrj, PrjId, TaskStatus)
     )
     

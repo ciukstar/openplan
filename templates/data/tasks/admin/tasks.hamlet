@@ -4,15 +4,15 @@
 <main.responsive.no-padding>
 
   <form method=get action=@{DataR $ AdminTasksR eid}>
-    $forall (status,label) <- taskStati
+    $forall status <- taskStati
       $if elem status stati
         <button.chip.fill.round.small-margin type=submit>
           <i>done
-          <span>_{label}
+          <span>_{msgTaskStatus status}
 
       $else
         <button.chip.round.tiny-margin type=submit name=#{paramTaskStatus} value=#{show status}>
-          <span>_{label}
+          <span>_{msgTaskStatus status}
 
   $if null tasks
     <figure style="text-align:center">
@@ -33,17 +33,7 @@
             #{name}
 
           <div.bold>
-            $case status
-              $of TaskStatusNotStarted
-                _{MsgTaskStatusNotStarted}
-              $of TaskStatusInProgress
-                _{MsgTaskStatusInProgress}
-              $of TaskStatusCompleted
-                _{MsgTaskStatusCompleted}
-              $of TaskStatusUncompleted
-                _{MsgTaskStatusUncompleted}
-              $of TaskStatusPartiallyCompleted
-                _{MsgTaskStatusPartiallyCompleted}
+            _{msgTaskStatus status}
 
           <label>
             $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
