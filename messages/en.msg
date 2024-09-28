@@ -1,3 +1,10 @@
+ActualDurationHours: Actual duration
+ActualEffortHours: Actual effort
+Hours: Hours
+DurationHours: Duration
+EffortHours: Effort
+CompletionPercentage: Completion percentage
+Monitoring: Monitoring
 UpdateHistory: Update history
 TaskStatusChange target@Text: Task status change:  "#{target}"
 TaskStateTransition source@Text target@Text: Task status transition: "#{source}" -> "#{target}"

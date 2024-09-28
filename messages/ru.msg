@@ -1,3 +1,10 @@
+ActualDurationHours: Фактическая продолжительность
+ActualEffortHours: Фактические трудозатраты
+Hours: Часы
+DurationHours: Продолжительность
+EffortHours: Трудозатраты
+CompletionPercentage: Процент выполнения
+Monitoring: Мониторинг
 UpdateHistory: История обновлений
 TaskStatusChange target: Изменение статуса задачи: "#{target}"
 TaskStateTransition source target: Переход статуса задачи: #{source} -> #{target}

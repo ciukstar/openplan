@@ -11,7 +11,7 @@
 
   <div.page.active>
 
-    $maybe (((Entity _ (Task _ _ name start end status _ _ _ descr),Entity _ (Dept _ dname _)),parent),(owner,user)) <- task
+    $maybe (((Entity _ (Task _ _ name start end _ _ status _ _ descr _ _),dept),parent),(owner,user)) <- task
 
       <dl.margin>
       
@@ -55,12 +55,13 @@
         <dt>
           <label.bold.large-text>_{MsgDepartment}
         <dd.margin>
-          #{dname}
+          $with Entity _ (Dept _ dname _) <- dept
+            #{dname}
 
         <dt>
           <label.bold.large-text>_{MsgPreviousTask}
         <dd.margin>
-          $maybe Entity _ (Task _ _ name _ _ _ _ _ _ _) <- parent
+          $maybe Entity _ (Task _ _ name _ _ _ _ _ _ _ _ _ _) <- parent
             #{name}
           $nothing
             <span.italic>_{MsgFirstTaskInSequence}

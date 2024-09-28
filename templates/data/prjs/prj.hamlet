@@ -12,7 +12,7 @@
 
   <div.page.active>
 
-    $maybe ((Entity _ (Prj _ code name location start end _ descr),outlet),(manager,user)) <- prj
+    $maybe ((Entity _ (Prj _ code name location start end effort duration _ descr),outlet),(manager,user)) <- prj
       <dl.margin>
         <dt>
           <label.bold.large-text>_{MsgCode}
@@ -23,6 +23,16 @@
           <label.bold.large-text>_{MsgName}
         <dd.margin>
           #{name}
+
+        <dt>
+          <label.bold.large-text>_{MsgEffortHours}
+        <dd.margin>
+          #{show effort}
+
+        <dt>
+          <label.bold.large-text>_{MsgDurationHours}
+        <dd.margin>
+          #{show duration}
 
         <dt>
           <label.bold.large-text>_{MsgLocation}

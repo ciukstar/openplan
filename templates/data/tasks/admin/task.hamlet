@@ -12,7 +12,7 @@
 
 <main.responsive.no-padding>
 
-  $maybe ((((Entity _ (Task _ _ name start end status _ _ _ descr),project),dept),(owner,user)),(manager,muser)) <- task
+  $maybe ((((Entity _ (Task _ _ name start end _ _ status _ _ descr _ _),project),dept),(owner,user)),(manager,muser)) <- task
 
     <dl.margin>
 
@@ -105,7 +105,7 @@
       <dt>
         <label.bold.large-text>_{MsgProject}
       <dd>
-        $with Entity _ (Prj _ _ pname _ _ _ _ _) <- project
+        $with Entity _ (Prj _ _ pname _ _ _ _ _ _ _) <- project
           #{pname}
           
       <dt>

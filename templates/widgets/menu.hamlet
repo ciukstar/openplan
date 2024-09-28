@@ -18,7 +18,12 @@
       <i>home
       <span>_{MsgHome}
 
-    $maybe Entity eid _ <- empl 
+    $maybe Entity eid _ <- empl
+      
+      <a href=@{DataR $ MonitorR eid} :curr == Just (DataR $ MonitorR eid):.active>
+        <i>nest_display
+        <span>_{MsgMonitoring}
+      
       <a href=@{DataR $ AdminTasksR eid} :curr == Just (DataR $ AdminTasksR eid):.active>
         <i>task_alt
         <span>_{MsgTaskManagement}

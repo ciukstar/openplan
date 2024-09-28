@@ -21,9 +21,9 @@ import Control.Monad.IO.Class (liftIO)
 
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
-import Data.Maybe (fromMaybe, mapMaybe)
-import Data.Text (Text, pack)
-import Data.Time.Clock (getCurrentTime)
+import Data.Maybe (fromMaybe, mapMaybe, isJust)
+import Data.Text (Text, pack, toLower)
+import Data.Time.Clock (getCurrentTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 
@@ -53,10 +53,11 @@ import Foundation
       , MsgTaskStatus, MsgPreviousTask, MsgCancel, MsgTaskStateTransition
       , MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner
       , MsgOwnerNotAssigned, MsgDescription, MsgNoDescriptionGiven
-      , MsgNoTasksToManageYet, MsgNoTasksWereFoundForSearchTerms
+      , MsgNoTasksToManageYet, MsgNoTasksWereFoundForSearchTerms, MsgHours
       , MsgMarkTaskAsComplete, MsgNotCompleted, MsgMarkTaskAsPartiallyCompleted
       , MsgPartiallyCompleted, MsgProjectManager, MsgPauseTask, MsgCompleteTask
-      , MsgResumeTask, MsgRestartTask, MsgRemarks, MsgMarkTaskAsNotCompleted, MsgTaskStatusChange, MsgUpdateHistory
+      , MsgResumeTask, MsgRestartTask, MsgRemarks, MsgMarkTaskAsNotCompleted
+      , MsgTaskStatusChange, MsgUpdateHistory, MsgDurationHours, MsgEffortHours, MsgActualEffortHours, MsgActualDurationHours
       )
     )
     
@@ -74,7 +75,7 @@ import Model
       )
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
-      , taskOwner, taskDescr
+      , taskOwner, taskDescr, taskDuration, taskEffort, taskActualDuration, taskActualEffort
       )
     , TaskLog
       ( TaskLog, taskLogTask, taskLogAction, taskLogEmpl, taskLogTime
@@ -100,12 +101,13 @@ import Yesod.Core.Handler
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
     ( selectField, optionsPairs, Option (Option), OptionList (OptionList)
-    , textField, textareaField, Textarea
+    , textField, textareaField, Textarea, intField
     )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
+    , FieldView (fvInput, fvErrors, fvRequired, fvLabel)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
 
@@ -177,11 +179,17 @@ getAdminTaskR eid tid = do
 
 formTaskStatusRemarks :: Form (Maybe Textarea)
 formTaskStatusRemarks extra = do
+    msgr <- getMessageRender
     (remarksR,remarksV) <- mopt textareaField FieldSettings
         { fsLabel = SomeMessage MsgRemarks
-        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+        , fsAttrs = [("placeholder",toLower $ msgr MsgRemarks)]
         } Nothing
-    return (remarksR, [whamlet|#{extra} ^{md3textareaWidget remarksV}|])
+    return (remarksR, [whamlet|
+                              #{extra}
+                              <div.field.textarea.border>
+                                ^{fvInput remarksV}
+                              |])
 
 
 getAdminTasksR :: EmplId -> Handler Html
@@ -283,6 +291,16 @@ formTask prjId did task extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . taskEnd . entityVal <$> task)
 
+    (effortR,effortV) <- mreq intField FieldSettings
+        { fsLabel = SomeMessage MsgEffortHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } (truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds . taskEffort . entityVal <$> task)
+
+    (durR,durV) <- mreq intField FieldSettings
+        { fsLabel = SomeMessage MsgDurationHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } (truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds . taskDuration . entityVal <$> task)
+
     parentOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Task
         orderBy [asc (x ^. TaskName)]
@@ -312,15 +330,28 @@ formTask prjId did task extra = do
         , fsAttrs = []
         } (taskDescr . entityVal <$> task)
 
+    (aEffortR,aEffortV) <- mopt intField FieldSettings
+        { fsLabel = SomeMessage MsgActualEffortHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } ((truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds <$>) . taskActualEffort . entityVal <$> task)
+
+    (aDurR,aDurV) <- mopt intField FieldSettings
+        { fsLabel = SomeMessage MsgActualDurationHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } ((truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds <$>) . taskActualDuration . entityVal <$> task)
+
     let r = Task prjId <$> deptR<*> nameR 
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
+            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> effortR)
+            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> durR)
             <*> pure ( case task of
                          Just t -> taskStatus (entityVal t)
                          Nothing -> TaskStatusNotStarted
                      )
-            <*> pure Nothing
             <*> parentR <*> ownerR <*> descrR
+            <*> (((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$>) <$> aEffortR)
+            <*> (((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$>) <$> aDurR)
 
     let w = $(widgetFile "data/tasks/form")
     return (r,w)
@@ -451,7 +482,7 @@ getTasksR prjId ps@(Tasks tids) = do
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgTasks 
+        setTitleI MsgTasks
         idOverlay <- newIdent
         $(widgetFile "data/tasks/subtasks")
 
@@ -463,7 +494,7 @@ buildSnippet :: PrjId -> [Text] -> Maybe TaskId -> Tasks -> TaskTree -> Widget
 buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
     [whamlet|
       <div>
-        $forall ((Entity tid (Task _ _ name start end status _ _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
+        $forall ((Entity tid (Task _ _ name start end _ _ status _ _ _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
           $with (pid,level) <- (pack $ show $ fromSqlKey tid,length tids + 1)
             $if (length subtasks) > 0
               <hr>

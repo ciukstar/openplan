@@ -8,14 +8,14 @@ module Handler.Projects
   ( getPrjsR, postPrjsR
   , getPrjR, postPrjR
   , getPrjNewR, getPrjEditR, postPrjDeleR
-  , getPrjTeamR
+  , getPrjTeamR, getMonitorR
   ) where
 
 import ClassyPrelude (readMay)
 import Control.Monad (void)
 
 import Data.Bifunctor (Bifunctor(bimap))
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Text (Text, pack)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -34,16 +34,17 @@ import Foundation
     , Route (DataR)
     , DataR
       ( PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR
-      , PrjTeamR
+      , PrjTeamR, MonitorR
       )
     , AppMessage
-      ( MsgSave, MsgCancel, MsgAlreadyExists
+      ( MsgSave, MsgCancel, MsgAlreadyExists, MsgEffortHours
       , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
       , MsgConfirmPlease, MsgProperties, MsgRecordDeleted, MsgRecordEdited
       , MsgProjects, MsgProject, MsgNoProjectsYet, MsgPleaseAddIfNecessary
       , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgTasks
       , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
-      , MsgPhoto, MsgManagerNotAssigned, MsgTeam, MsgDescription, MsgNoDescriptionGiven
+      , MsgPhoto, MsgManagerNotAssigned, MsgDescription, MsgNoDescriptionGiven
+      , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgHours
       )
     )
 
@@ -52,11 +53,11 @@ import Material3 (md3widget, md3selectWidget, daytimeLocalField, md3textareaWidg
 import Model
     ( msgSuccess, msgError
     , Tasks (Tasks), Outlet (Outlet)
-    , Empl(Empl), User (User), Task
+    , EmplId, Empl(Empl), User (User), Task
     , PrjId
     , Prj
       ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
-      , prjManager, prjDescr
+      , prjManager, prjDescr, prjDuration, prjEffort
       )
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
@@ -74,13 +75,36 @@ import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
-    ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList), textareaField)
+    ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList)
+    , textareaField, intField
+    )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
     ( Field, FormResult (FormSuccess)
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
+    , FieldView (fvErrors, fvInput, fvLabel, fvRequired)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
+import Data.Time.Clock (nominalDiffTimeToSeconds, secondsToNominalDiffTime)
+
+
+getMonitorR :: EmplId -> Handler Html
+getMonitorR eid = do
+    
+    prjs <- runDB $ select $ do
+        x :& m :& u <- from $ table @Prj
+            `leftJoin` table @Empl `on` (\(x :& m) -> x ^. PrjManager ==. m ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
+        where_ $ x ^. PrjManager ==. just (val eid)
+        orderBy [asc (x ^. PrjId)]
+        return (x,(m,u))
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgProjects 
+        idOverlay <- newIdent
+        $(widgetFile "data/prjs/monitor/prjs")
 
 
 getPrjTeamR :: PrjId -> Handler Html
@@ -194,6 +218,16 @@ formProject prj extra = do
         { fsLabel = SomeMessage MsgProjectEnd
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjEnd . entityVal <$> prj)
+
+    (effortR,effortV) <- mreq intField FieldSettings
+        { fsLabel = SomeMessage MsgEffortHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } (truncate @_ @Int . (/ 60) . (/ 60) . nominalDiffTimeToSeconds . prjEffort . entityVal <$> prj)
+
+    (durR,durV) <- mreq intField FieldSettings
+        { fsLabel = SomeMessage MsgDurationHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } (truncate @_ @Int . (/ 60) . (/ 60) . nominalDiffTimeToSeconds . prjDuration . entityVal <$> prj)
     
     emplOptions <- liftHandler $ (option <$>) <$> runDB ( select $ do
         x :& u <- from $ table @Empl
@@ -216,6 +250,8 @@ formProject prj extra = do
     let r = Prj <$> typeR <*> codeR <*> nameR <*> locationR
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
+            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> effortR)
+            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> durR)
             <*> managerR <*> descrR
 
     let w = $(widgetFile "data/prjs/form") 

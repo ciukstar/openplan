@@ -65,7 +65,7 @@ import Handler.Projects
     ( getPrjsR, postPrjsR
     , getPrjR, postPrjR
     , getPrjNewR, getPrjEditR, postPrjDeleR
-    , getPrjTeamR
+    , getPrjTeamR, getMonitorR
     )
 
 import Handler.Outlets

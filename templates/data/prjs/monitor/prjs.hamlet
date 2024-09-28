@@ -28,7 +28,15 @@
                   &mdash;
                   <time.day datetime=#{fmt end}>
                     #{fmt end}
-              
+                    
+              <div>
+                <label>
+                  _{MsgCompletionPercentage} 
+                <div.max.center-align>
+                  93%
+                <progress value="93" max="100">
+                    
+                
               <div.row>
                 $maybe Entity _ (Empl uid _ _ _) <- manager
                   <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>

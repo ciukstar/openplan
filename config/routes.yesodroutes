@@ -18,6 +18,7 @@
 
 /data DataR:
 
+    /employees/#EmplId/monitor MonitorR GET
 
     /employees/#EmplId/tasks/#TaskId/#TaskStatus TaskStatusR POST
     /employees/#EmplId/tasks/#TaskId             AdminTaskR  GET

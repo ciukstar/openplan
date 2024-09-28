@@ -4,7 +4,42 @@
 $forall v <- [nameV,startV,endV]
   ^{md3widget v}
 
+$forall v <- [effortV,durV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>
+        #{err}
+    $nothing
+      <span.helper.lower>
+        _{MsgHours}
+
+      
 ^{md3textareaWidget descrV}
+
 
 $forall v <- [deptV,parentV,ownerV]
   ^{md3selectWidget v}
+
+
+$forall v <- [aEffortV,aDurV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
+
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
+
+    $maybe err <- fvErrors v
+      <span.error>
+        #{err}
+    $nothing
+      <span.helper.lower>
+        _{MsgHours}
