@@ -19,8 +19,9 @@
 /data DataR:
 
 
-    /employees/#EmplId/tasks/#TaskId AdminTaskR  GET
-    /employees/#EmplId/tasks         AdminTasksR GET
+    /employees/#EmplId/tasks/#TaskId/#TaskStatus TaskStatusR POST
+    /employees/#EmplId/tasks/#TaskId             AdminTaskR  GET
+    /employees/#EmplId/tasks                     AdminTasksR GET
 
     /prjs/#PrjId/dele/tasks/#TaskId/+Tasks TaskDeleR POST
     /prjs/#PrjId/edit/tasks/#TaskId/+Tasks TaskEditR GET

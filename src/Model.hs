@@ -17,8 +17,8 @@
 module Model where
 
 import ClassyPrelude.Yesod
-    ( Typeable, Text, mkMigrate
-    , mkPersist, persistFileWith, share, sqlSettings
+    ( Typeable, Text, mkMigrate, mkPersist, persistFileWith
+    , share, sqlSettings, readMay
     )
 
 import Control.Monad (mapM)
@@ -52,7 +52,10 @@ import Text.Read (Read, readMaybe)
 import Text.Show (Show, show)
 
 import Yesod.Auth.HashDB (HashDBUser (userPasswordHash, setPasswordHash))
-import Yesod.Core.Dispatch (PathMultiPiece, toPathMultiPiece, fromPathMultiPiece)
+import Yesod.Core.Dispatch
+    ( PathPiece, toPathPiece, fromPathPiece
+    , PathMultiPiece, toPathMultiPiece, fromPathMultiPiece
+    )
 import Yesod.Form (Textarea)
 
 
@@ -64,6 +67,15 @@ data TaskStatus = TaskStatusNotStarted
                 | TaskStatusPartiallyCompleted
     deriving (Show, Read, Eq, Ord, Enum, Bounded)
 derivePersistField "TaskStatus"
+
+
+instance PathPiece TaskStatus where
+    toPathPiece :: TaskStatus -> Text
+    toPathPiece = pack . show
+
+    fromPathPiece :: Text -> Maybe TaskStatus
+    fromPathPiece = readMay
+    
 
 taskStati :: [TaskStatus]
 taskStati = [minBound .. maxBound]

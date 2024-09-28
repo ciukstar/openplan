@@ -1,19 +1,18 @@
 
-^{widgetTopbar (Just $ (DataR $ AdminTasksR eid,[])) (msgr MsgTask) idOverlay Nothing Nothing}
+<header.fixed>
+  <nav.responsive.max>
+    <a.button.circle.transparent href=@{DataR $ AdminTasksR eid}>
+      <i>arrow_back
+    
+    <h6.title.max>
+      _{MsgTask}
+      
+    <a.button.circle.transparent href=# title=_{MsgUpdateHistory}>
+      <i>history
 
 <main.responsive.no-padding>
 
   $maybe ((((Entity _ (Task _ _ name start end status _ _ _ descr),project),dept),(owner,user)),(manager,muser)) <- task
-
-    <button title=_{MsgMarkTaskAsComplete}>
-      _{MsgCompleteTheTask}
-      
-    <button.tertiary title=_{MsgMarkTaskAsPartiallyCompleted}>
-      _{MsgPartiallyCompleted}
-      
-    <button.error title=_{MsgMarkTaskAsNotCompleted}>
-      <i>thumb_down
-      _{MsgNotCompleted}
 
     <dl.margin>
 
@@ -49,6 +48,59 @@
         <label.bold.large-text>_{MsgTaskStatus}
       <dd>
         _{msgTaskStatus status}
+        $case status
+          $of TaskStatusNotStarted
+            <form method=post action=@{DataR $ TaskStatusR eid tid TaskStatusInProgress} enctype=#{et}>
+              ^{fw}
+              <button.tiny-margin type=submit>
+                _{MsgStartTask}
+                
+          $of TaskStatusInProgress
+            <form method=post enctype=#{et}>
+              ^{fw}
+              <button.tertiary.tiny-margin type=submit formaction=@{DataR $ TaskStatusR eid tid TaskStatusPaused}>
+                _{MsgPauseTask}
+       
+              <button.margin-tiny type=submit title=_{MsgMarkTaskAsComplete}
+                formaction=@{DataR $ TaskStatusR eid tid TaskStatusCompleted}>
+                
+                _{MsgCompleteTask}
+                
+          $of TaskStatusPaused
+            <form method=post action=@{DataR $ TaskStatusR eid tid TaskStatusInProgress} enctype=#{et}>
+              ^{fw}
+              <button.tiny-margin type=submit>
+                _{MsgResumeTask}
+                
+          $of TaskStatusCompleted
+            <form method=post enctype=#{et}>
+              ^{fw}
+              <button.tiny-margin type=submit formaction=@{DataR $ TaskStatusR eid tid TaskStatusInProgress}>
+                _{MsgRestartTask}
+
+              <button.tertiary.margin-tiny type=submit title=_{MsgMarkTaskAsPartiallyCompleted}
+                formaction=@{DataR $ TaskStatusR eid tid TaskStatusPartiallyCompleted}>
+                
+                _{MsgPartiallyCompleted}
+
+              <button.error.margin-tiny type=submit title=_{MsgMarkTaskAsNotCompleted}
+                formaction=@{DataR $ TaskStatusR eid tid TaskStatusUncompleted}>
+                
+                <i>thumb_down
+                _{MsgNotCompleted}
+              
+                
+          $of TaskStatusPartiallyCompleted
+            <form method=post action=@{DataR $ TaskStatusR eid tid TaskStatusInProgress} enctype=#{et}>
+              ^{fw}
+              <button.tiny-margin type=submit>
+                _{MsgRestartTask}
+                
+          $of TaskStatusUncompleted
+            <form method=post action=@{DataR $ TaskStatusR eid tid TaskStatusInProgress} enctype=#{et}>
+              ^{fw}
+              <button.tiny-margin type=submit>
+                _{MsgRestartTask}
 
       <dt>
         <label.bold.large-text>_{MsgProject}

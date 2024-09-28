@@ -1,3 +1,13 @@
+UpdateHistory: Update history
+TaskStatusChange target@Text: Task status change:  "#{target}"
+TaskStateTransition source@Text target@Text: Task status transition: "#{source}" -> "#{target}"
+Remarks: Remarks
+TaskUncompleted: Task uncompleted
+RestartTask: Restart task
+ResumeTask: Resume task
+CompleteTask: Complete task
+PauseTask: Pause task
+StartTask: Start task
 StateMachineDiagram: State machine diagram 
 TaskStatusStateTransition: State transition for task status
 BasicEntities: Basic entities

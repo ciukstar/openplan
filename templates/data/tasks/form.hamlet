@@ -6,5 +6,5 @@ $forall v <- [nameV,startV,endV]
 
 ^{md3textareaWidget descrV}
 
-$forall v <- [statusV,deptV,parentV,ownerV]
+$forall v <- [deptV,parentV,ownerV]
   ^{md3selectWidget v}

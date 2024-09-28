@@ -222,6 +222,7 @@ instance Yesod App where
     isAuthorized (StaticR _) _ = return Authorized
 
     
+    isAuthorized (DataR (TaskStatusR eid _ _)) _ = setUltDestCurrent >> isEmployeeSelf eid
     isAuthorized (DataR (AdminTaskR eid _)) _ = setUltDestCurrent >> isEmployeeSelf eid
     isAuthorized (DataR (AdminTasksR eid)) _ = setUltDestCurrent >> isEmployeeSelf eid
 

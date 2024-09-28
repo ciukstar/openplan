@@ -186,11 +186,11 @@ fillDemoRu = do
                       , taskName = "Задача №010000000"
                       , taskStart = prjStart prj1
                       , taskEnd = addUTCTime oneDayTime (prjStart prj1)
-                      , taskStatus = TaskStatusInProgress
+                      , taskStatus = TaskStatusNotStarted
                       , taskDuration = Just oneDayTime
                       , taskParent = Nothing
                       , taskOwner = Just empl2
-                      , taskDescr = Just "Сделай то, сделай это"
+                      , taskDescr = Just "Сделай то, сделай это."
                       }
                  
     t11 <- insert task11
@@ -200,11 +200,11 @@ fillDemoRu = do
                        , taskName = "Задача №011000000"
                        , taskStart = taskEnd task11
                        , taskEnd = addUTCTime (2 * oneDayTime) (taskEnd task11)
-                       , taskStatus = TaskStatusInProgress
+                       , taskStatus = TaskStatusNotStarted
                        , taskDuration = Just (2 * oneDayTime)
                        , taskParent = Just t11
                        , taskOwner = Just empl3
-                       , taskDescr = Just "Сделай то, сделай это"
+                       , taskDescr = Just "Сделай то, сделай это.."
                        }
     t111 <- insert task111
 
@@ -213,11 +213,11 @@ fillDemoRu = do
                         , taskName = "Задача №011100000"
                         , taskStart = taskEnd task111
                         , taskEnd = addUTCTime (3 * oneDayTime) (taskEnd task111)
-                        , taskStatus = TaskStatusInProgress
+                        , taskStatus = TaskStatusNotStarted
                         , taskDuration = Just (3 * oneDayTime)
                         , taskParent = Just t111
                         , taskOwner = Just empl4
-                        , taskDescr = Just "Сделай то, сделай это"
+                        , taskDescr = Just "Сделай то, сделай это..."
                         }
     t1111 <- insert task1111
 
@@ -230,7 +230,7 @@ fillDemoRu = do
                          , taskDuration = Just (3 * oneDayTime)
                          , taskParent = Just t1111
                          , taskOwner = Nothing
-                         , taskDescr = Just "Сделай то, сделай это"
+                         , taskDescr = Just "Сделай то, сделай это...."
                          }
     t11111 <- insert task11111
 

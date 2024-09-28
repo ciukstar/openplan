@@ -10,25 +10,28 @@ module Handler.Tasks
   , getTaskR, postTaskR
   , getTaskNewR, getTaskEditR, postTaskDeleR
   , getAdminTasksR, getAdminTaskR
+  , postTaskStatusR
   ) where
 
 import ClassyPrelude (readMay)
 
 import Control.Applicative ((<|>)) 
 import Control.Monad (void, forM, unless)
+import Control.Monad.IO.Class (liftIO)
 
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Text (Text, pack)
+import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 
 import Database.Esqueleto.Experimental
     ( select, selectOne, from, table, where_, val, orderBy, asc
-    , (^.), (?.), (==.), (:&)((:&)), (||.)
+    , (^.), (?.), (==.), (:&)((:&)), (||.), (=.)
     , isNothing_, Value (unValue), innerJoin, leftJoin, on, just
-    , valList, in_, not_
+    , valList, in_, not_, update, set
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
@@ -38,7 +41,7 @@ import Foundation
     , Route (DataR)
     , DataR
       ( TasksR, TaskR, TaskNewR, TaskEditR, TaskDeleR, PrjR, PrjsR
-      , UserPhotoR, PrjTeamR, AdminTasksR, AdminTaskR
+      , UserPhotoR, PrjTeamR, AdminTasksR, AdminTaskR, TaskStatusR
       )
     , AppMessage
       ( MsgTasks, MsgTask, MsgSave, MsgCancel, MsgAlreadyExists, MsgYou
@@ -46,14 +49,14 @@ import Foundation
       , MsgConfirmPlease, MsgProperties, MsgDele, MsgNoSubtasksYet
       , MsgRecordDeleted, MsgPleaseAddIfNecessary, MsgTeam, MsgTaskOwner
       , MsgRecordEdited, MsgSubtasks, MsgNoTasksForThisProjectYet, MsgSequence
-      , MsgStart, MsgEnd, MsgDepartment, MsgProject
-      , MsgTaskStatus, MsgPreviousTask
+      , MsgStart, MsgEnd, MsgDepartment, MsgProject, MsgStartTask
+      , MsgTaskStatus, MsgPreviousTask, MsgCancel, MsgTaskStateTransition
       , MsgFirstTaskInSequence, MsgNotAppointedYet, MsgPhoto, MsgOwner
       , MsgOwnerNotAssigned, MsgDescription, MsgNoDescriptionGiven
       , MsgNoTasksToManageYet, MsgNoTasksWereFoundForSearchTerms
-      , MsgMarkTaskAsComplete, MsgCompleteTheTask, MsgMarkTaskAsNotCompleted
-      , MsgNotCompleted, MsgMarkTaskAsPartiallyCompleted, MsgPartiallyCompleted
-      , MsgProjectManager
+      , MsgMarkTaskAsComplete, MsgNotCompleted, MsgMarkTaskAsPartiallyCompleted
+      , MsgPartiallyCompleted, MsgProjectManager, MsgPauseTask, MsgCompleteTask
+      , MsgResumeTask, MsgRestartTask, MsgRemarks, MsgMarkTaskAsNotCompleted, MsgTaskStatusChange, MsgUpdateHistory
       )
     )
     
@@ -64,9 +67,18 @@ import Model
     , PrjId, Prj (Prj), User (User), Dept (Dept)
     , EmplId, Empl (Empl)
     , TaskId, Tasks (Tasks)
+    , TaskStatus
+      ( TaskStatusNotStarted, TaskStatusInProgress, TaskStatusPaused
+      , TaskStatusCompleted, TaskStatusPartiallyCompleted
+      , TaskStatusUncompleted
+      )
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
       , taskOwner, taskDescr
+      )
+    , TaskLog
+      ( TaskLog, taskLogTask, taskLogAction, taskLogEmpl, taskLogTime
+      , taskLogRemarks
       )
     , EntityField
       ( TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId, TaskDept
@@ -88,7 +100,7 @@ import Yesod.Core.Handler
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
     ( selectField, optionsPairs, Option (Option), OptionList (OptionList)
-    , textField, textareaField
+    , textField, textareaField, Textarea
     )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
@@ -96,6 +108,49 @@ import Yesod.Form.Types
     , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
+
+
+postTaskStatusR :: EmplId -> TaskId -> TaskStatus -> Handler Html
+postTaskStatusR eid tid status = do
+    
+    ((fr,_),_) <- runFormPost formTaskStatusRemarks
+
+    now <- liftIO getCurrentTime
+    msgr <- getMessageRender
+    
+    case fr of
+      FormSuccess r -> do
+          status' <- (unValue <$>) <$> runDB ( selectOne $ do
+              x <- from $ table @Task
+              where_ $ x ^. TaskId ==. val tid
+              return $ x ^. TaskStatus )
+              
+          runDB $ update $ \x -> do
+              set x [TaskStatus =. val status]
+              where_ $ x ^. TaskId ==. val tid
+
+          case status' of
+            Just s -> runDB $ insert_ TaskLog
+                { taskLogTask = tid
+                , taskLogEmpl = eid
+                , taskLogTime = now
+                , taskLogAction = msgr $ MsgTaskStateTransition
+                                  (msgr (msgTaskStatus s))
+                                  (msgr (msgTaskStatus status))
+                , taskLogRemarks = r
+                }
+            Nothing -> runDB $ insert_ TaskLog
+                { taskLogTask = tid
+                , taskLogEmpl = eid
+                , taskLogTime = now
+                , taskLogAction = msgr $ MsgTaskStatusChange (msgr (msgTaskStatus status))
+                , taskLogRemarks = r
+                }
+          
+          redirect $ DataR $ AdminTaskR eid tid
+      _otherwise -> do
+          addMessageI msgError MsgInvalidFormData
+          redirect $ DataR $ AdminTaskR eid tid
 
 
 getAdminTaskR :: EmplId -> TaskId -> Handler Html
@@ -112,12 +167,21 @@ getAdminTaskR eid tid = do
         where_ $ x ^. TaskId ==. val tid
         return ((((x,p),d),(o,uo)),(m,um))
 
-    msgr <- getMessageRender
+    (fw,et) <- generateFormPost formTaskStatusRemarks
+
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgTask 
-        idOverlay <- newIdent
         $(widgetFile "data/tasks/admin/task")
+
+
+formTaskStatusRemarks :: Form (Maybe Textarea)
+formTaskStatusRemarks extra = do
+    (remarksR,remarksV) <- mopt textareaField FieldSettings
+        { fsLabel = SomeMessage MsgRemarks
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } Nothing
+    return (remarksR, [whamlet|#{extra} ^{md3textareaWidget remarksV}|])
 
 
 getAdminTasksR :: EmplId -> Handler Html
@@ -219,12 +283,6 @@ formTask prjId did task extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . taskEnd . entityVal <$> task)
 
-    (statusR,statusV) <- mreq (selectField (optionsPairs statusOptions)) FieldSettings
-        { fsLabel = SomeMessage MsgTaskStatus
-        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
-        , fsAttrs = []
-        } (taskStatus . entityVal <$> task)
-
     parentOptions <- liftHandler $ (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Task
         orderBy [asc (x ^. TaskName)]
@@ -257,7 +315,11 @@ formTask prjId did task extra = do
     let r = Task prjId <$> deptR<*> nameR 
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
-            <*> statusR <*> pure Nothing
+            <*> pure ( case task of
+                         Just t -> taskStatus (entityVal t)
+                         Nothing -> TaskStatusNotStarted
+                     )
+            <*> pure Nothing
             <*> parentR <*> ownerR <*> descrR
 
     let w = $(widgetFile "data/tasks/form")
@@ -284,8 +346,6 @@ formTask prjId did task extra = do
               Nothing -> Left MsgAlreadyExists
               Just (Entity tid'' _) | tid' == tid'' -> Right name
                                     | otherwise -> Left MsgAlreadyExists
-
-      statusOptions = (\x -> (msgTaskStatus x,x)) <$> taskStati
 
 
 postTaskR :: PrjId -> TaskId -> Tasks -> Handler Html

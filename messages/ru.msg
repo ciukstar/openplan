@@ -1,3 +1,13 @@
+UpdateHistory: История обновлений
+TaskStatusChange target: Изменение статуса задачи: "#{target}"
+TaskStateTransition source target: Переход статуса задачи: #{source} -> #{target}
+Remarks: Замечания
+TaskUncompleted: Задача не выполнена
+RestartTask: Перезапустить задачу
+ResumeTask: Возобновить задачу
+CompleteTask: Завершить задачу
+PauseTask: Приостановить задачу
+StartTask: Начать задачу
 StateMachineDiagram: Схема машины состояний
 TaskStatusStateTransition: Переход состояния для статуса задачи
 BasicEntities: Базовые сущности
