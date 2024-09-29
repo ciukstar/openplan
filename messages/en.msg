@@ -1,3 +1,9 @@
+ActualEffort: Actual effort
+PlannedEffort: Planned effort
+TotalActualEffort: Total actual effort
+TotalPlannedEffort: Total planned effort
+DegreeOfCompletion: Degree of completion
+ProjectStatus: Project status
 ActualDurationHours: Actual duration
 ActualEffortHours: Actual effort
 Hours: Hours

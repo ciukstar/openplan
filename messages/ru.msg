@@ -1,3 +1,9 @@
+ActualEffort: Фактически отработано
+PlannedEffort: Запланировано трудозатрат
+TotalActualEffort: Всего фактически отработанных
+TotalPlannedEffort: Всего запланированных трудозатрат
+DegreeOfCompletion: Степень завершения
+ProjectStatus: Статус проекта
 ActualDurationHours: Фактическая продолжительность
 ActualEffortHours: Фактические трудозатраты
 Hours: Часы
@@ -168,4 +174,4 @@ Username: Логин
 SignOut: Выйти
 SignIn: Войти
 Home: Главная
-AppName: OpenPlan
+AppName: Открытый План

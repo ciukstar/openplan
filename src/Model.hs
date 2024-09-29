@@ -13,6 +13,7 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE TypeOperators              #-}
 {-# LANGUAGE InstanceSigs               #-}
+{-# LANGUAGE TypeApplications           #-}
 
 module Model where
 
@@ -27,6 +28,7 @@ import Data.Bool (Bool)
 import Data.ByteString (ByteString)
 import Data.Either (Either (Left, Right))
 import Data.Eq (Eq)
+import Data.Fixed (Fixed (MkFixed))
 import Data.Function ((.))
 import Data.Functor ((<$>))
 import Data.Maybe (Maybe (Just))
@@ -44,6 +46,11 @@ import Database.Persist.Quasi ( lowerCaseSettings )
 import Database.Persist.Sql (fromSqlKey, toSqlKey, PersistFieldSql, SqlType, sqlType)
 import Database.Persist.Types (SqlType (SqlInt64))
 import Database.Persist.TH (derivePersistField)
+
+import GHC.Float (Double, int2Double, truncateDouble)
+import GHC.Integer (Integer)
+import GHC.Num ((*))
+import GHC.Real ((/), (^))
 
 import Prelude (Enum, Bounded, fromIntegral, truncate, minBound, maxBound)
 
@@ -164,3 +171,13 @@ paramTheme = "theme"
 
 eventChangeTheme :: Text
 eventChangeTheme = "changetheme"
+
+
+nominalDiffTimeToHours :: NominalDiffTime -> Double
+nominalDiffTimeToHours =
+    (/ 3600.0) . int2Double . truncate . nominalDiffTimeToSeconds
+
+
+hoursToNominalDiffTime :: Double -> NominalDiffTime
+hoursToNominalDiffTime =
+    secondsToNominalDiffTime . MkFixed . (* (^) @Integer @Integer 10 12) . truncateDouble @Integer . (* 3600)

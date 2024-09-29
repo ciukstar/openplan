@@ -6,5 +6,5 @@ dl dd
     margin-bottom: 1rem
     margin-left: 1rem
 
-.field
-    margin-block-end: 0
+.field.textarea
+    margin-block-end: 0.5rem

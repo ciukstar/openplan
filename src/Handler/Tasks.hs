@@ -22,8 +22,11 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Bifunctor (bimap)
 import qualified Data.List.Safe as LS (last)
 import Data.Maybe (fromMaybe, mapMaybe, isJust)
-import Data.Text (Text, pack, toLower)
-import Data.Time.Clock (getCurrentTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
+import Data.Text (Text, pack)
+import Data.Time.Clock
+    ( getCurrentTime, nominalDiffTimeToSeconds, NominalDiffTime
+    , secondsToNominalDiffTime
+    )
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 
@@ -57,7 +60,8 @@ import Foundation
       , MsgMarkTaskAsComplete, MsgNotCompleted, MsgMarkTaskAsPartiallyCompleted
       , MsgPartiallyCompleted, MsgProjectManager, MsgPauseTask, MsgCompleteTask
       , MsgResumeTask, MsgRestartTask, MsgRemarks, MsgMarkTaskAsNotCompleted
-      , MsgTaskStatusChange, MsgUpdateHistory, MsgDurationHours, MsgEffortHours, MsgActualEffortHours, MsgActualDurationHours
+      , MsgTaskStatusChange, MsgUpdateHistory, MsgDurationHours, MsgEffortHours
+      , MsgActualEffortHours, MsgActualDurationHours
       )
     )
     
@@ -75,17 +79,18 @@ import Model
       )
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
-      , taskOwner, taskDescr, taskDuration, taskEffort, taskActualDuration, taskActualEffort
+      , taskOwner, taskDescr, taskDuration, taskEffort, taskActualDuration
+      , taskActualEffort
       )
     , TaskLog
       ( TaskLog, taskLogTask, taskLogAction, taskLogEmpl, taskLogTime
-      , taskLogRemarks
+      , taskLogRemarks, taskLogEffort
       )
     , EntityField
       ( TaskId, TaskParent, TaskName, TaskPrj, DeptName, DeptId, TaskDept
       , EmplUser, UserId, UserName, UserEmail, EmplId, TaskOwner, PrjId
       , PrjManager, TaskStatus
-      )
+      ), hoursToNominalDiffTime
     )
 
 import Settings (widgetFile)
@@ -101,7 +106,7 @@ import Yesod.Core.Handler
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
     ( selectField, optionsPairs, Option (Option), OptionList (OptionList)
-    , textField, textareaField, Textarea, intField
+    , textField, textareaField, Textarea, intField, doubleField
     )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
@@ -115,13 +120,13 @@ import Yesod.Persist.Core (YesodPersist(runDB))
 postTaskStatusR :: EmplId -> TaskId -> TaskStatus -> Handler Html
 postTaskStatusR eid tid status = do
     
-    ((fr,_),_) <- runFormPost formTaskStatusRemarks
+    ((fr,_),_) <- runFormPost formTaskStatusTransition
 
     now <- liftIO getCurrentTime
     msgr <- getMessageRender
     
     case fr of
-      FormSuccess r -> do
+      FormSuccess (effort,r) -> do
           status' <- (unValue <$>) <$> runDB ( selectOne $ do
               x <- from $ table @Task
               where_ $ x ^. TaskId ==. val tid
@@ -139,6 +144,7 @@ postTaskStatusR eid tid status = do
                 , taskLogAction = msgr $ MsgTaskStateTransition
                                   (msgr (msgTaskStatus s))
                                   (msgr (msgTaskStatus status))
+                , taskLogEffort = effort
                 , taskLogRemarks = r
                 }
             Nothing -> runDB $ insert_ TaskLog
@@ -146,6 +152,7 @@ postTaskStatusR eid tid status = do
                 , taskLogEmpl = eid
                 , taskLogTime = now
                 , taskLogAction = msgr $ MsgTaskStatusChange (msgr (msgTaskStatus status))
+                , taskLogEffort = effort
                 , taskLogRemarks = r
                 }
           
@@ -169,7 +176,7 @@ getAdminTaskR eid tid = do
         where_ $ x ^. TaskId ==. val tid
         return ((((x,p),d),(o,uo)),(m,um))
 
-    (fw,et) <- generateFormPost formTaskStatusRemarks
+    (fw,et) <- generateFormPost formTaskStatusTransition
 
     msgs <- getMessages
     defaultLayout $ do
@@ -177,19 +184,40 @@ getAdminTaskR eid tid = do
         $(widgetFile "data/tasks/admin/task")
 
 
-formTaskStatusRemarks :: Form (Maybe Textarea)
-formTaskStatusRemarks extra = do
-    msgr <- getMessageRender
+formTaskStatusTransition :: Form (NominalDiffTime, Maybe Textarea)
+formTaskStatusTransition extra = do
+    
+    (effortR,effortV) <- mreq doubleField FieldSettings
+        { fsLabel = SomeMessage MsgEffortHours
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
+        } (Just 0)
+        
     (remarksR,remarksV) <- mopt textareaField FieldSettings
         { fsLabel = SomeMessage MsgRemarks
-        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
-        , fsAttrs = [("placeholder",toLower $ msgr MsgRemarks)]
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } Nothing
-    return (remarksR, [whamlet|
-                              #{extra}
-                              <div.field.textarea.border>
-                                ^{fvInput remarksV}
-                              |])
+        
+    return ( (,) <$> ( hoursToNominalDiffTime <$> effortR) <*> remarksR
+           , [whamlet|
+                     #{extra}
+                     <div.field.label.border.round :isJust (fvErrors effortV):.invalid>
+
+                       ^{fvInput effortV}
+                       <label>
+                         #{fvLabel effortV}
+                         $if fvRequired effortV
+                           <sup>*
+
+                       $maybe err <- fvErrors effortV
+                         <span.error>
+                           #{err}
+                       $nothing
+                         <span.helper.lower>
+                           _{MsgHours}
+                       
+                     ^{md3textareaWidget remarksV}
+                     |]
+                 )
 
 
 getAdminTasksR :: EmplId -> Handler Html

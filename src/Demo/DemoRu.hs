@@ -29,13 +29,14 @@ import Model
       , taskStatus, taskParent, taskOwner, taskDescr, taskActualDuration
       , taskActualEffort, taskEffort
       )
-    , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted)
-    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
+    , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted, TaskStatusPaused)
+    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment), TaskLog (TaskLog, taskLogTask, taskLogEmpl, taskLogTime, taskLogAction, taskLogEffort, taskLogRemarks)
     )
     
 import Text.Hamlet (shamlet)
 
 import Yesod.Auth.Email (saltPass)
+import Yesod.Form.Fields (Textarea(Textarea))
 
 
 fillDemoRu :: MonadIO m => ReaderT SqlBackend m ()
@@ -199,7 +200,7 @@ fillDemoRu = do
                       , taskEnd = addUTCTime oneDayTime (prjStart prj1)
                       , taskEffort = oneDayTime
                       , taskDuration = oneDayTime
-                      , taskStatus = TaskStatusNotStarted
+                      , taskStatus = TaskStatusPaused
                       , taskParent = Nothing
                       , taskOwner = Just empl2
                       , taskDescr = Just "Сделай то, сделай это."
@@ -208,6 +209,22 @@ fillDemoRu = do
                       }
                  
     t11 <- insert task11
+
+    insert_ $ TaskLog { taskLogTask = t11
+                      , taskLogEmpl = empl2
+                      , taskLogTime = now
+                      , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
+                      , taskLogEffort = 0
+                      , taskLogRemarks = Just (Textarea "Начало выполнения задачи")
+                      }
+
+    insert_ $ TaskLog { taskLogTask = t11
+                      , taskLogEmpl = empl2
+                      , taskLogTime = addUTCTime (oneDayTime / 3) now
+                      , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
+                      , taskLogEffort = oneDayTime / 3
+                      , taskLogRemarks = Just (Textarea "Пауза")
+                      }
 
     let task111 = Task { taskPrj = p1
                        , taskDept = dept1

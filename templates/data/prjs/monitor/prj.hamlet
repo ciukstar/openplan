@@ -1,0 +1,112 @@
+
+^{widgetTopbar (Just (DataR $ MonitorR eid,[])) (msgr MsgProject) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a.active href=@{DataR $ PrjR pid}>_{MsgProjectStatus}
+    <a href=@{DataR $ TasksR pid (Tasks [])}>_{MsgTasks}
+    <a href=@{DataR $ PrjTeamR pid}>_{MsgTeam}
+
+  <div.page.active.padding>
+
+    $maybe (((Entity _ (Prj _ code name location start end effort duration _ descr),outlet),(manager,user)),hours) <- prj
+
+      <article.border>
+        <h5>_{MsgCompletionPercentage}
+        <div ##{idCardCompletionDegree}>
+          $with (h,e) <- (show $ nominalDiffTimeToHours hours, show $ nominalDiffTimeToHours effort)
+            <div ##{idChartCompletionDegree} data-hours=#{h} data-effort=#{e}>
+
+            <div>
+              <p>
+                _{MsgActualEffort}: #
+                <span.hours-effort data-value=#{h}>
+                  #{h}
+                <span.lower>
+                  \ _{MsgHours}
+              <p>
+                _{MsgPlannedEffort}: #
+                <span.hours-effort data-value=#{e}>
+                  #{e}
+                <span.lower>
+                  \ _{MsgHours}
+
+      
+      <dl.margin>
+        <dt>
+          <label.bold.large-text>_{MsgCode}
+        <dd.margin>
+          #{code}
+
+        <dt>
+          <label.bold.large-text>_{MsgName}
+        <dd.margin>
+          #{name}
+
+        <dt>
+          <label.bold.large-text>_{MsgEffortHours}
+        <dd.margin>
+          #{show effort}
+
+        <dt>
+          <label.bold.large-text>_{MsgDurationHours}
+        <dd.margin>
+          #{show duration}
+
+        <dt>
+          <label.bold.large-text>_{MsgLocation}
+        <dd.margin>
+          #{location}
+
+        <dt>
+          <label.bold.large-text>_{MsgOutletType}
+        <dd.margin>
+          $with Entity _ (Outlet oname _) <- outlet
+            #{oname}
+
+        $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+          <dt>
+            <label.bold.large-text>_{MsgProjectStart}
+          <dd.margin>
+            $with dt <- fmt start
+              <time.daytime datetime=#{dt}>
+                #{dt}
+
+          <dt>
+            <label.bold.large-text>_{MsgProjectEnd}
+          <dd.margin>
+            $with dt <- fmt end
+              <time.daytime datetime=#{dt}>
+                #{dt}
+      
+        <dt>
+          <label.bold.large-text>_{MsgDescription}
+        <dd.margin>
+          $maybe descr <- descr
+            #{descr}
+          $nothing
+            <span.italic>_{MsgNoDescriptionGiven}
+
+        <dt>
+          <label.bold.large-text>_{MsgProjectManager}
+        <dd.margin>
+          <div.row>
+            $maybe Entity _ (Empl uid _ position _) <- manager
+              <img.circle.tiny src=@{DataR $ UserPhotoR uid} alt=_{MsgPhoto} loading=lazy>
+              <div.max>
+                <div>
+                  $maybe Entity _ (User email _ name _) <- user
+                    $maybe name <- name
+                      #{name}
+                    $nothing
+                      #{email}
+      
+                <label>
+                  #{position}
+                  
+            $nothing
+              <span.italic>_{MsgNotAppointedYet}
+                  
+
+^{widgetSnackbar msgs}

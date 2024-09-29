@@ -30,13 +30,14 @@ import Model
       , taskParent, taskStatus, taskOwner, taskDescr, taskActualEffort
       , taskEffort, taskActualDuration
       )
-    , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted)
-    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
+    , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted, TaskStatusPaused)
+    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment), TaskLog (TaskLog, taskLogTask, taskLogEmpl, taskLogTime, taskLogAction, taskLogEffort, taskLogRemarks)
     )
 
 import Text.Hamlet (shamlet)
 
 import Yesod.Auth.Email (saltPass)
+import Yesod.Form.Fields (Textarea(Textarea))
 
 
 fillDemoEn :: MonadIO m => ReaderT SqlBackend m ()
@@ -174,20 +175,19 @@ fillDemoEn = do
                          , emplAppointment = Just (addUTCTime ((-650) * oneDayTime) now)
                          }
 
-    prj1 <- do
-          let s = addUTCTime ((-30) * oneDayTime) now
-              e = addUTCTime (40 * oneDayTime) now
-          return Prj { prjOutlet = pt1
-                   , prjCode = "P001"
-                   , prjName = "Project #001"
-                   , prjLocation = "1485 NW Street St Wilson WY 83014"
-                   , prjStart = s
-                   , prjEnd = e
-                   , prjEffort = diffUTCTime e s / 3
-                   , prjDuration = diffUTCTime e s / 3
-                   , prjManager = Just empl1
-                   , prjDescr = Just "This is the Project #001 with the code P001"
-                   }
+    let prj1 = let s = addUTCTime ((-30) * oneDayTime) now
+                   e = addUTCTime (40 * oneDayTime) now
+               in Prj { prjOutlet = pt1
+                      , prjCode = "P001"
+                      , prjName = "Project #001"
+                      , prjLocation = "1485 NW Street St Wilson WY 83014"
+                      , prjStart = s
+                      , prjEnd = e
+                      , prjEffort = diffUTCTime e s / 3
+                      , prjDuration = diffUTCTime e s / 3
+                      , prjManager = Just empl1
+                      , prjDescr = Just "This is the Project #001 with the code P001"
+                      }
 
     p1 <- insert prj1
 
@@ -198,7 +198,7 @@ fillDemoEn = do
                       , taskEnd = addUTCTime oneDayTime (prjStart prj1)
                       , taskEffort = oneDayTime
                       , taskDuration = oneDayTime
-                      , taskStatus = TaskStatusNotStarted
+                      , taskStatus = TaskStatusPaused
                       , taskParent = Nothing
                       , taskOwner = Just empl2
                       , taskDescr = Just "Do that, do this."
@@ -207,6 +207,22 @@ fillDemoEn = do
                       }
 
     t11 <- insert task11
+
+    insert_ $ TaskLog { taskLogTask = t11
+                      , taskLogEmpl = empl2
+                      , taskLogTime = now
+                      , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
+                      , taskLogEffort = 0
+                      , taskLogRemarks = Just (Textarea "Start task")
+                      }
+
+    insert_ $ TaskLog { taskLogTask = t11
+                      , taskLogEmpl = empl2
+                      , taskLogTime = addUTCTime (oneDayTime / 3) now
+                      , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
+                      , taskLogEffort = oneDayTime / 3
+                      , taskLogRemarks = Just (Textarea "Pause task")
+                      }
 
     let task111 = Task { taskPrj = p1
                        , taskDept = dept1

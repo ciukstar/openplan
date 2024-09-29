@@ -8,33 +8,35 @@ module Handler.Projects
   ( getPrjsR, postPrjsR
   , getPrjR, postPrjR
   , getPrjNewR, getPrjEditR, postPrjDeleR
-  , getPrjTeamR, getMonitorR
+  , getPrjTeamR, getMonitorR, getMonitorPrjR
+  , getMonitorPrjTasksR
   ) where
 
 import ClassyPrelude (readMay)
-import Control.Monad (void)
+import Control.Monad (void, join)
 
-import Data.Bifunctor (Bifunctor(bimap))
+import Data.Bifunctor (bimap, second)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (Text, pack)
+import Data.Time.Clock (NominalDiffTime, nominalDiffTimeToSeconds)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import Database.Esqueleto.Experimental
-    ( select, selectOne, from, table, where_, val, orderBy, asc
+    ( SqlExpr, select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&))
     , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just
-    , subSelectList
+    , subSelectList, subSelect, sum_
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
     ( Handler, Form, widgetSnackbar, widgetTopbar
-    , Route (DataR)
+    , Route (DataR, StaticR)
     , DataR
       ( PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR
-      , PrjTeamR, MonitorR
+      , PrjTeamR, MonitorR, MonitorPrjR
       )
     , AppMessage
       ( MsgSave, MsgCancel, MsgAlreadyExists, MsgEffortHours
@@ -44,14 +46,17 @@ import Foundation
       , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgTasks
       , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
       , MsgPhoto, MsgManagerNotAssigned, MsgDescription, MsgNoDescriptionGiven
-      , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgHours
+      , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgProjectStatus
+      , MsgHours, MsgPlannedEffort, MsgActualEffort
       )
     )
+
+import GHC.Float (int2Double)
 
 import Material3 (md3widget, md3selectWidget, daytimeLocalField, md3textareaWidget)
 
 import Model
-    ( msgSuccess, msgError
+    ( msgSuccess, msgError, nominalDiffTimeToHours, hoursToNominalDiffTime
     , Tasks (Tasks), Outlet (Outlet)
     , EmplId, Empl(Empl), User (User), Task
     , PrjId
@@ -59,24 +64,27 @@ import Model
       ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
       , prjManager, prjDescr, prjDuration, prjEffort
       )
+    , TaskLog (TaskLog)
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
-      , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj
+      , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj, TaskLogTask
+      , TaskId, TaskLogEffort
       )
     )
 
 import Settings (widgetFile)
 
+import Text.Printf (printf)
 import Text.Hamlet (Html)
 
 import Yesod.Core
-    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler))
+    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler), addScript)
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
 import Yesod.Form.Fields
     ( textField, selectField, optionsPairs, Option (Option), OptionList (OptionList)
-    , textareaField, intField
+    , textareaField, doubleField
     )
 import Yesod.Form.Functions (generateFormPost, checkM, mreq, runFormPost, mopt)
 import Yesod.Form.Types
@@ -85,24 +93,66 @@ import Yesod.Form.Types
     , FieldView (fvErrors, fvInput, fvLabel, fvRequired)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
-import Data.Time.Clock (nominalDiffTimeToSeconds, secondsToNominalDiffTime)
+import Settings.StaticFiles (js_echarts_min_js)
+
+
+getMonitorPrjTasksR :: EmplId -> PrjId -> Handler Html
+getMonitorPrjTasksR eid pid = undefined
+
+
+getMonitorPrjR :: EmplId -> PrjId -> Handler Html
+getMonitorPrjR eid pid = do
+    
+    prj <- (second (fromMaybe 0 . join . unValue) <$>) <$> runDB ( selectOne $ do
+        x :& o :& m :& u <- from $ table @Prj
+            `innerJoin` table @Outlet `on` (\(x :& t) -> x ^. PrjOutlet ==. t ^. OutletId)
+            `leftJoin` table @Empl `on` (\(x :& _ :& m) -> x ^. PrjManager ==. m ?. EmplId)
+            `leftJoin` table @User `on` (\(_ :& _ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
+
+        let actualEffort :: SqlExpr (Value (Maybe (Maybe NominalDiffTime)))
+            actualEffort = subSelect $ do
+                l :& t <- from $ table @TaskLog
+                    `innerJoin` table @Task `on` (\(l :& t) -> l ^. TaskLogTask ==. t ^. TaskId)
+                where_ $ t ^. TaskPrj ==. x ^. PrjId
+                return $ sum_ $ l ^. TaskLogEffort
+                
+        where_ $ x ^. PrjId ==. val pid
+        return (((x,o),(m,u)),actualEffort) )
+
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgProject 
+        idOverlay <- newIdent
+        idCardCompletionDegree <- newIdent
+        idChartCompletionDegree <- newIdent
+        addScript $ StaticR js_echarts_min_js
+        $(widgetFile "data/prjs/monitor/prj")
 
 
 getMonitorR :: EmplId -> Handler Html
 getMonitorR eid = do
     
-    prjs <- runDB $ select $ do
+    prjs <- (second (fromMaybe 0 . join . unValue) <$>) <$> runDB ( select $ do
         x :& m :& u <- from $ table @Prj
             `leftJoin` table @Empl `on` (\(x :& m) -> x ^. PrjManager ==. m ?. EmplId)
             `leftJoin` table @User `on` (\(_ :& m :& u) -> m ?. EmplUser ==. u ?. UserId)
+
+        let actualEffort :: SqlExpr (Value (Maybe (Maybe NominalDiffTime)))
+            actualEffort = subSelect $ do
+                l :& t <- from $ table @TaskLog
+                    `innerJoin` table @Task `on` (\(l :& t) -> l ^. TaskLogTask ==. t ^. TaskId)
+                where_ $ t ^. TaskPrj ==. x ^. PrjId
+                return $ sum_ $ l ^. TaskLogEffort
+            
         where_ $ x ^. PrjManager ==. just (val eid)
         orderBy [asc (x ^. PrjId)]
-        return (x,(m,u))
+        return ((x,(m,u)),actualEffort) )
     
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgProjects 
+        setTitleI MsgProjects
         idOverlay <- newIdent
         $(widgetFile "data/prjs/monitor/prjs")
 
@@ -219,15 +269,15 @@ formProject prj extra = do
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
         } (utcToLocalTime utc . prjEnd . entityVal <$> prj)
 
-    (effortR,effortV) <- mreq intField FieldSettings
+    (effortR,effortV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgEffortHours
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
-        } (truncate @_ @Int . (/ 60) . (/ 60) . nominalDiffTimeToSeconds . prjEffort . entityVal <$> prj)
+        } (nominalDiffTimeToHours . prjEffort . entityVal <$> prj)
 
-    (durR,durV) <- mreq intField FieldSettings
+    (durR,durV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgDurationHours
         , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
-        } (truncate @_ @Int . (/ 60) . (/ 60) . nominalDiffTimeToSeconds . prjDuration . entityVal <$> prj)
+        } (nominalDiffTimeToHours . prjDuration . entityVal <$> prj)
     
     emplOptions <- liftHandler $ (option <$>) <$> runDB ( select $ do
         x :& u <- from $ table @Empl
@@ -250,14 +300,14 @@ formProject prj extra = do
     let r = Prj <$> typeR <*> codeR <*> nameR <*> locationR
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
-            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> effortR)
-            <*> ((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$> durR)
+            <*> (hoursToNominalDiffTime <$> effortR)
+            <*> (hoursToNominalDiffTime <$> durR)
             <*> managerR <*> descrR
 
     let w = $(widgetFile "data/prjs/form") 
     return (r,w)
   where
-
+      
       option = bimap ((\(x,y) -> fromMaybe y x) . bimap unValue unValue) unValue
       options = ((\(lbl, pid) -> Option lbl pid (pack $ show $ fromSqlKey pid)) <$>)
       optionsList = flip OptionList ((toSqlKey <$>) . readMay)

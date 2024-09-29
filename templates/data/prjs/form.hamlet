@@ -10,36 +10,21 @@ $forall v <- [startV, endV]
   ^{md3widget v}
 
 
-<div.field.label.border.round :isJust (fvErrors effortV):.invalid>
+$forall v <- [effortV, durV]
+  <div.field.label.border.round :isJust (fvErrors v):.invalid>
 
-  ^{fvInput effortV}
-  <label>
-    #{fvLabel effortV}
-    $if fvRequired effortV
-      <sup>*
+    ^{fvInput v}
+    <label>
+      #{fvLabel v}
+      $if fvRequired v
+        <sup>*
 
-  $maybe err <- fvErrors effortV
-    <span.error>
-      #{err}
-  $nothing
-    <span.helper.lower>
-      _{MsgHours}
-
-
-<div.field.label.border.round :isJust (fvErrors durV):.invalid>
-
-  ^{fvInput durV}
-  <label>
-    #{fvLabel durV}
-    $if fvRequired durV
-      <sup>*
-
-  $maybe err <- fvErrors durV
-    <span.error>
-      #{err}
-  $nothing
-    <span.helper.lower>
-      _{MsgHours}
+    $maybe err <- fvErrors v
+      <span.error>
+        #{err}
+    $nothing
+      <span.helper.lower>
+        _{MsgHours}
 
 
 ^{md3textareaWidget descrV}

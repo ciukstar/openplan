@@ -6,6 +6,7 @@ TaskLog
     empl EmplId OnDeleteCascade
     time UTCTime
     action Text
+    effort NominalDiffTime
     remarks Textarea Maybe
     
 Task

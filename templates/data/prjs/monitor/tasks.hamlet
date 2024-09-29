@@ -1,0 +1,28 @@
+
+
+^{widgetTopbar (Just (DataR PrjsR,[])) (msgr MsgProject) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ PrjR prjId}>_{MsgProperties}
+    <a.active href=@{DataR $ TasksR prjId (Tasks [])}>_{MsgTasks}
+    <a href=@{DataR $ PrjTeamR prjId}>_{MsgTeam}
+
+  <div.page.active>
+
+    $if null roots
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoTasksForThisProjectYet}.
+          <p>_{MsgPleaseAddIfNecessary}.
+      
+    $else
+      ^{buildSnippet prjId open Nothing (Tasks []) trees}
+
+  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR $ TaskNewR prjId ps}
+    style="z-index:1" onclick="event.stopPropagation()">
+    <i>add
+
+  ^{widgetSnackbar msgs}

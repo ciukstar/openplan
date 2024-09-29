@@ -11,9 +11,9 @@
           <p>_{MsgPleaseAddIfNecessary}.
           
     $else
-      $forall (Entity pid (Prj _ code name _ start end _ _ _ _),(manager,user)) <- prjs
+      $forall ((Entity pid (Prj _ code name _ start end effort _ _ _),(manager,user)),actualEffort) <- prjs
         $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-          <a.row.padding.surface-container.wave href=@{DataR $ PrjR pid}>
+          <a.row.padding.surface-container.wave href=@{DataR $ MonitorPrjR eid pid}>
 
             <div.max>
               <h6.small>#{name}
@@ -31,10 +31,20 @@
                     
               <div>
                 <label>
-                  _{MsgCompletionPercentage} 
-                <div.max.center-align>
-                  93%
-                <progress value="93" max="100">
+                  _{MsgCompletionPercentage}
+                $if effort == 0
+                  <div.max.center-align>
+                    0%
+                  <progress value=0 max=100>
+    
+                $else
+                  $with a <- int2Double $ truncate $ ((*) ((^) 10 12)) $ nominalDiffTimeToSeconds actualEffort
+                    $with b <- int2Double $ truncate $ ((*) ((^) 10 12)) $ nominalDiffTimeToSeconds effort
+                      $with q <- pack $ printf "%.4f" $ a / b 
+                        <div.max.center-align>
+                          <span.percent data-value=#{q}>
+                            #{q}
+                        <progress value=#{q} max=1>
                     
                 
               <div.row>
@@ -58,9 +68,5 @@
             <i>arrow_forward_ios
 
           <hr>
-
-  <a.button.circle.extra.fixed.right.bottom.margin.medium-elevate href=@{DataR PrjNewR}
-    style="z-index:1" onclick="event.stopPropagation()">
-    <i>add
 
   ^{widgetSnackbar msgs}
