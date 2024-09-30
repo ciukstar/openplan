@@ -1,3 +1,6 @@
+OverdueTasks: Просроченные задачи
+OngoingTasks: Текущие задачи
+CompletedTasks: Выполненные задачи
 ProjectDuration: Длительность проекта
 RemainingEffort: Оставшиеся трудозатраты
 ActualEffort: Фактически отработано

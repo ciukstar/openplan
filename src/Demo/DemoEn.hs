@@ -49,6 +49,7 @@ fillDemoEn = do
     now <- liftIO getCurrentTime
 
     let oneDayTime = 24 * 60 * 60
+        eightHoursTime = 8 * 60 * 60
 
     let freepik = [shamlet|
                           Designed by #
@@ -198,7 +199,7 @@ fillDemoEn = do
                       , taskDept = dept1
                       , taskName = "Task #010000000"
                       , taskStart = prjStart prj1
-                      , taskEnd = addUTCTime oneDayTime (prjStart prj1)
+                      , taskEnd = addUTCTime (3 * oneDayTime) (prjStart prj1)
                       , taskEffort = oneDayTime
                       , taskDuration = oneDayTime
                       , taskStatus = TaskStatusPaused
@@ -209,19 +210,21 @@ fillDemoEn = do
 
     t11 <- insert task11
 
-    insert_ $ TaskLog { taskLogTask = t11
+    let l111 = TaskLog { taskLogTask = t11
                       , taskLogEmpl = empl2
-                      , taskLogTime = now
+                      , taskLogTime = taskStart task11
                       , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
                       , taskLogEffort = 0
                       , taskLogRemarks = Just (Textarea "Start task")
                       }
 
+    insert_ l111
+
     insert_ $ TaskLog { taskLogTask = t11
                       , taskLogEmpl = empl2
-                      , taskLogTime = addUTCTime (oneDayTime / 3) now
+                      , taskLogTime = addUTCTime eightHoursTime (taskLogTime l111)
                       , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
-                      , taskLogEffort = oneDayTime / 3
+                      , taskLogEffort = eightHoursTime
                       , taskLogRemarks = Just (Textarea "Pause task")
                       }
 

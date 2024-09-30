@@ -78,6 +78,20 @@
 
                 <dd>
                   <ul>
+                    <li>
+                      _{MsgCompletedTasks}: #
+                      <span.decimal data-value=#{completedTasks}>
+                        #{completedTasks}
+                    <li>
+                      _{MsgOngoingTasks}: #
+                      <span.decimal data-value=#{ongoingTasks}>
+                        #{ongoingTasks}
+                    <li>
+                      _{MsgOverdueTasks}: #
+                      <span.decimal data-value=#{overdueTasks}>
+                        #{overdueTasks}
+                    <li>
+                      <hr>
                     $forall (status,n) <- tasksByStatus
                       <li>
                         _{msgTaskStatus status}: #

@@ -1,3 +1,6 @@
+OverdueTasks: Overdue tasks
+OngoingTasks: Ongoing tasks
+CompletedTasks: Completed tasks 
 ProjectDuration: Project duration
 RemainingEffort: Remaining effort
 ActualEffort: Actual effort

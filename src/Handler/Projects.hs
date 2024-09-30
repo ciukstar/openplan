@@ -12,9 +12,10 @@ module Handler.Projects
   , getMonitorPrjTasksR
   ) where
 
-import ClassyPrelude (readMay)
+import ClassyPrelude (readMay, getCurrentTime)
 
 import Control.Monad (void, join)
+import Control.Monad.IO.Class (liftIO)
 
 import Data.Bifunctor (bimap, second)
 import Data.Maybe (fromMaybe, isJust)
@@ -26,9 +27,9 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import Database.Esqueleto.Experimental
     ( SqlExpr, select, selectOne, from, table, where_, val, orderBy, asc
-    , (^.), (?.), (==.), (:&)((:&))
+    , (^.), (?.), (==.), (:&)((:&)), (<=.), (>.)
     , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just
-    , subSelectList, subSelect, sum_, groupBy, countRows
+    , subSelectList, subSelect, exists, sum_, groupBy, countRows, max_, valList, not_
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
@@ -50,7 +51,8 @@ import Foundation
       , MsgPhoto, MsgManagerNotAssigned, MsgDescription, MsgNoDescriptionGiven
       , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgProjectStatus
       , MsgPlannedEffort, MsgActualEffort, MsgNumberOfTasks, MsgRemainingEffort
-      , MsgHours, MsgProjectDuration
+      , MsgHours, MsgProjectDuration, MsgCompletedTasks, MsgOngoingTasks
+      , MsgOverdueTasks
       )
     )
 
@@ -68,10 +70,14 @@ import Model
       , prjManager, prjDescr, prjDuration, prjEffort
       )
     , TaskLog (TaskLog)
+    , TaskStatus
+      ( TaskStatusCompleted, TaskStatusInProgress, TaskStatusPaused
+      , TaskStatusNotStarted, TaskStatusPartiallyCompleted, TaskStatusUncompleted
+      )
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
       , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj, TaskLogTask
-      , TaskId, TaskLogEffort, TaskStatus
+      , TaskId, TaskLogEffort, TaskStatus, TaskLogTime, TaskEnd
       )
     )
 
@@ -123,6 +129,42 @@ getMonitorPrjR eid pid = do
                 
         where_ $ x ^. PrjId ==. val pid
         return (((x,o),(m,u)),actualEffort) )
+
+    now <- liftIO getCurrentTime
+
+    completedTasks <- maybe 0 unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Task
+        where_ $ x ^. TaskPrj ==. val pid
+        where_ $ x ^. TaskStatus ==. val TaskStatusCompleted
+        return (countRows :: SqlExpr (Value Int)) )
+                
+    ongoingTasks <- maybe 0 unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Task
+        where_ $ x ^. TaskPrj ==. val pid
+        where_ $ not_ $ x ^. TaskStatus ==. val TaskStatusCompleted
+        where_ $ exists $ do
+            l <- from $ table @TaskLog
+            where_ $ l ^. TaskLogTask ==. x ^. TaskId
+            where_ $ l ^. TaskLogTime <=. x ^. TaskEnd
+            where_ $ just (l ^. TaskLogTime) ==. subSelectMaybe ( do
+                m <- from $ table @TaskLog
+                where_ $ m ^. TaskLogTask ==. l ^. TaskLogTask
+                return $ max_ $ m ^. TaskLogTime )
+        return (countRows :: SqlExpr (Value Int)) )
+    
+    overdueTasks <- maybe 0 unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Task
+        where_ $ x ^. TaskPrj ==. val pid
+        where_ $ not_ $ x ^. TaskStatus ==. val TaskStatusCompleted
+        where_ $ exists $ do
+            l <- from $ table @TaskLog
+            where_ $ l ^. TaskLogTask ==. x ^. TaskId
+            where_ $ l ^. TaskLogTime >. x ^. TaskEnd
+            where_ $ just (l ^. TaskLogTime) ==. subSelectMaybe ( do
+                m <- from $ table @TaskLog
+                where_ $ m ^. TaskLogTask ==. l ^. TaskLogTask
+                return $ max_ $ m ^. TaskLogTime )
+        return (countRows :: SqlExpr (Value Int)) )
 
     tasksByStatus <- (bimap unValue unValue <$>) <$> runDB ( select $ do
         x <- from $ table @Task
