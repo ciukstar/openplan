@@ -16,7 +16,23 @@ Array.from(
 
 
 Array.from(
-  document.body.querySelectorAll('.hours-effort[data-value]')
+  document.body.querySelectorAll('.unit[data-unit][data-value]')
+).forEach(function (x) {
+  x.textContent = new Number(x.dataset.value).toLocaleString(
+    navigator.language,
+    { style: 'unit',
+      unit: x.dataset.unit,
+      unitDisplay: 'long',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+      useGrouping: true
+    }
+  );
+});
+
+
+Array.from(
+  document.body.querySelectorAll('.decimal[data-value]')
 ).forEach(function (x) {
   x.textContent = new Number(x.dataset.value).toLocaleString(
     navigator.language,
@@ -101,7 +117,15 @@ gauge.setOption({
         offsetCenter: [0, '45%'],
         valueAnimation: true,
         formatter: function (value) {
-          return '{value|' + value.toFixed(2) + '}{unit|%}';
+          const v = value.toLocaleString(
+            navigator.language,
+            { style: 'decimal',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+              useGrouping: true
+            }
+          );
+          return '{value|' + v + '}{unit|%}';
         },
         rich: {
           value: {

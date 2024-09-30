@@ -26,11 +26,14 @@ import Model
       , prjManager, prjDescr, prjDuration, prjEffort)
     , Task
       ( Task, taskPrj, taskDept, taskName, taskStart, taskEnd, taskDuration
-      , taskStatus, taskParent, taskOwner, taskDescr, taskActualDuration
-      , taskActualEffort, taskEffort
+      , taskStatus, taskParent, taskOwner, taskDescr, taskEffort
       )
     , TaskStatus (TaskStatusInProgress, TaskStatusNotStarted, TaskStatusPaused)
-    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment), TaskLog (TaskLog, taskLogTask, taskLogEmpl, taskLogTime, taskLogAction, taskLogEffort, taskLogRemarks)
+    , Empl (Empl, emplUser, emplDept, emplPosition, emplAppointment)
+    , TaskLog
+      ( TaskLog, taskLogTask, taskLogEmpl, taskLogTime, taskLogAction, taskLogEffort
+      , taskLogRemarks
+      )
     )
     
 import Text.Hamlet (shamlet)
@@ -204,8 +207,6 @@ fillDemoRu = do
                       , taskParent = Nothing
                       , taskOwner = Just empl2
                       , taskDescr = Just "Сделай то, сделай это."
-                      , taskActualEffort = Nothing
-                      , taskActualDuration = Nothing
                       }
                  
     t11 <- insert task11
@@ -237,10 +238,24 @@ fillDemoRu = do
                        , taskParent = Just t11
                        , taskOwner = Just empl3
                        , taskDescr = Just "Сделай то, сделай это.."
-                       , taskActualEffort = Nothing
-                       , taskActualDuration = Nothing
                        }
     t111 <- insert task111
+
+    insert_ $ TaskLog { taskLogTask = t111
+                      , taskLogEmpl = empl3
+                      , taskLogTime = now
+                      , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
+                      , taskLogEffort = 0
+                      , taskLogRemarks = Just (Textarea "Начало выполнения задачи")
+                      }
+
+    insert_ $ TaskLog { taskLogTask = t111
+                      , taskLogEmpl = empl3
+                      , taskLogTime = addUTCTime (oneDayTime / 3) now
+                      , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
+                      , taskLogEffort = oneDayTime / 2
+                      , taskLogRemarks = Just (Textarea "Пауза")
+                      }
 
     let task1111 = Task { taskPrj = p1
                         , taskDept = dept1
@@ -253,8 +268,6 @@ fillDemoRu = do
                         , taskParent = Just t111
                         , taskOwner = Just empl4
                         , taskDescr = Just "Сделай то, сделай это..."
-                        , taskActualEffort = Nothing
-                        , taskActualDuration = Nothing
                         }
     t1111 <- insert task1111
 
@@ -269,8 +282,6 @@ fillDemoRu = do
                          , taskParent = Just t1111
                          , taskOwner = Nothing
                          , taskDescr = Just "Сделай то, сделай это...."
-                         , taskActualEffort = Nothing
-                         , taskActualDuration = Nothing
                          }
     t11111 <- insert task11111
 
@@ -303,11 +314,25 @@ fillDemoRu = do
                       , taskParent = Nothing
                       , taskOwner = Just empl3
                       , taskDescr = Just "Сделай то, сделай это"
-                      , taskActualEffort = Nothing
-                      , taskActualDuration = Nothing
                       }
                  
     t21 <- insert task21
+
+    insert_ $ TaskLog { taskLogTask = t21
+                      , taskLogEmpl = empl3
+                      , taskLogTime = now
+                      , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
+                      , taskLogEffort = 0
+                      , taskLogRemarks = Just (Textarea "Начало выполнения задачи")
+                      }
+
+    insert_ $ TaskLog { taskLogTask = t21
+                      , taskLogEmpl = empl3
+                      , taskLogTime = addUTCTime (oneDayTime / 3) now
+                      , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
+                      , taskLogEffort = oneDayTime / 3
+                      , taskLogRemarks = Just (Textarea "Пауза")
+                      }
 
     let task211 = Task { taskPrj = p2
                        , taskDept = dept2
@@ -320,8 +345,6 @@ fillDemoRu = do
                        , taskParent = Just t21
                        , taskOwner = Just empl4
                        , taskDescr = Just "Сделай то, сделай это"
-                       , taskActualEffort = Nothing
-                       , taskActualDuration = Nothing
                        }
     t211 <- insert task211
 
@@ -336,8 +359,6 @@ fillDemoRu = do
                         , taskParent = Just t211
                         , taskOwner = Just empl1
                         , taskDescr = Just "Сделай то, сделай это"
-                        , taskActualEffort = Nothing
-                        , taskActualDuration = Nothing
                         }
     t2111 <- insert task2111
 
@@ -352,8 +373,6 @@ fillDemoRu = do
                          , taskParent = Just t2111
                          , taskOwner = Just empl1
                          , taskDescr = Just "Сделай то, сделай это"
-                         , taskActualEffort = Nothing
-                         , taskActualDuration = Nothing
                          }
     t21111 <- insert task21111
 

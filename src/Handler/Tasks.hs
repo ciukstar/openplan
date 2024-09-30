@@ -79,8 +79,7 @@ import Model
       )
     , Task
       ( Task, taskName, taskParent, taskStart, taskEnd, taskDept, taskStatus
-      , taskOwner, taskDescr, taskDuration, taskEffort, taskActualDuration
-      , taskActualEffort
+      , taskOwner, taskDescr, taskDuration, taskEffort
       )
     , TaskLog
       ( TaskLog, taskLogTask, taskLogAction, taskLogEmpl, taskLogTime
@@ -358,16 +357,6 @@ formTask prjId did task extra = do
         , fsAttrs = []
         } (taskDescr . entityVal <$> task)
 
-    (aEffortR,aEffortV) <- mopt intField FieldSettings
-        { fsLabel = SomeMessage MsgActualEffortHours
-        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
-        } ((truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds <$>) . taskActualEffort . entityVal <$> task)
-
-    (aDurR,aDurV) <- mopt intField FieldSettings
-        { fsLabel = SomeMessage MsgActualDurationHours
-        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing, fsAttrs = []
-        } ((truncate @_ @Int . (/ 3600) . nominalDiffTimeToSeconds <$>) . taskActualDuration . entityVal <$> task)
-
     let r = Task prjId <$> deptR<*> nameR 
             <*> (localTimeToUTC utc <$> startR)
             <*> (localTimeToUTC utc <$> endR)
@@ -378,8 +367,6 @@ formTask prjId did task extra = do
                          Nothing -> TaskStatusNotStarted
                      )
             <*> parentR <*> ownerR <*> descrR
-            <*> (((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$>) <$> aEffortR)
-            <*> (((* 60) . (* 60) . secondsToNominalDiffTime . fromIntegral <$>) <$> aDurR)
 
     let w = $(widgetFile "data/tasks/form")
     return (r,w)
@@ -522,7 +509,7 @@ buildSnippet :: PrjId -> [Text] -> Maybe TaskId -> Tasks -> TaskTree -> Widget
 buildSnippet prjId open msid ps@(Tasks tids) (TaskTree trees) =
     [whamlet|
       <div>
-        $forall ((Entity tid (Task _ _ name start end _ _ status _ _ _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
+        $forall ((Entity tid (Task _ _ name start end _ _ status _ _ _),(owner,user)),trees@(TaskTree subtasks)) <- trees
           $with (pid,level) <- (pack $ show $ fromSqlKey tid,length tids + 1)
             $if (length subtasks) > 0
               <hr>

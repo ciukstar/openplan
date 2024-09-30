@@ -12,7 +12,7 @@
 
 <main.responsive.no-padding>
 
-  $maybe ((((Entity _ (Task _ _ name start end _ _ status _ _ descr _ _),project),dept),(owner,user)),(manager,muser)) <- task
+  $maybe ((((Entity _ (Task _ _ name start end _ _ status _ _ descr),project),dept),(owner,user)),(manager,muser)) <- task
 
     <dl.margin>
 
@@ -159,8 +159,6 @@
 
           $nothing
             <span.italic>_{MsgNotAppointedYet}
-
-
 
 
 ^{widgetSnackbar msgs}

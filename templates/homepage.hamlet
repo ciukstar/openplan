@@ -30,7 +30,7 @@
               _{MsgNoTasksWereFoundForSearchTerms}.
                 
           $else
-            $forall (Entity _ (Task _ _ tname _ end _ _ status _ _ descr _ _),Entity _ (Prj _ _ pname _ _ _ _ _ _ _)) <- tasks
+            $forall (Entity _ (Task _ _ tname _ end _ _ status _ _ descr),Entity _ (Prj _ _ pname _ _ _ _ _ _ _)) <- tasks
               <details.margin>
                 <summary>
                   #{tname}

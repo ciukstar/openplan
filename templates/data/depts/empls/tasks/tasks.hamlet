@@ -16,7 +16,7 @@
           <p>_{MsgNoTasksYet}.
           
     $else
-      $forall Entity _ (Task _ _ name start end _ _ status _ _ _ _ _) <- tasks
+      $forall Entity _ (Task _ _ name start end _ _ status _ _ _) <- tasks
         <div.row.padding.surface-container>
 
           <div.max>

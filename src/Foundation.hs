@@ -52,6 +52,7 @@ data App = App
     , appLogger      :: Logger
     }
 
+
 mkMessage "App" "messages" "en"
 
 -- This is where we define all of the routes in our application. For a full

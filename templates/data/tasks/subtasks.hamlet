@@ -16,7 +16,7 @@
           <p>_{MsgPleaseAddIfNecessary}.
           
     $else
-      $forall Entity tid (Task _ _ name start end _ _ status _ _ _ _ _) <- tasks
+      $forall Entity tid (Task _ _ name start end _ _ status _ _ _) <- tasks
         <a.row.padding.surface-container.wave href=@{DataR $ TaskR prjId tid ps}>
 
           <div.max>

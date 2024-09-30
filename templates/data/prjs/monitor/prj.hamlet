@@ -12,73 +12,80 @@
 
     $maybe (((Entity _ (Prj _ code name location start end effort duration _ descr),outlet),(manager,user)),hours) <- prj
 
+      <h5>
+        <code>
+          #{code}
+        &mdash;
+        #{name}
+      <p>
+        <div>
+          <label.bold.large-text>_{MsgOutletType}: #
+          $with Entity _ (Outlet oname _) <- outlet
+            #{oname}
+        <div>
+          <label.bold.large-text>_{MsgLocation}: #
+          #{location}
+
       <article.border>
         <h5>_{MsgCompletionPercentage}
+        
         <div ##{idCardCompletionDegree}>
           $with (h,e) <- (show $ nominalDiffTimeToHours hours, show $ nominalDiffTimeToHours effort)
             <div ##{idChartCompletionDegree} data-hours=#{h} data-effort=#{e}>
 
             <div>
-              <p>
-                _{MsgActualEffort}: #
-                <span.hours-effort data-value=#{h}>
-                  #{h}
-                <span.lower>
-                  \ _{MsgHours}
-              <p>
-                _{MsgPlannedEffort}: #
-                <span.hours-effort data-value=#{e}>
-                  #{e}
-                <span.lower>
-                  \ _{MsgHours}
+              <dl>
+                <dt>
+                  <span.bold>_{MsgProjectDuration}: #
+                  <span.unit data-unit=day data-value=#{diffDays (utctDay end) (utctDay start)}>
+                    #{e}
+                <dd>
+
+                  $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
+                    <ul>
+                      <li style="white-space:break-spaces">
+                        $with dt <- fmt start
+                          <time.daytime datetime=#{dt}>
+                            #{dt}
+                        \ &mdash; #
+                        $with dt <- fmt end
+                          <time.daytime datetime=#{dt}>
+                            #{dt}
+                    
+                <dt>
+                  <span.bold>_{MsgPlannedEffort}: #
+                  <span.unit data-unit=hour data-value=#{e}>
+                    #{e}
+
+                <dd>
+                  <ul>
+                    <li>
+                      _{MsgActualEffort}: #
+                      <span.unit data-unit=hour data-value=#{h}>
+                        #{h}
+                    <li>
+                      _{MsgRemainingEffort}: #
+                      $with ef <- nominalDiffTimeToHours effort - nominalDiffTimeToHours hours
+                        <span.unit data-unit=hour data-value=#{ef}>
+                          #{show ef}
+
+              <dl>
+                <dt>
+                  $with n <- ((.) sum (fmap snd)) tasksByStatus
+                    <span.bold>_{MsgNumberOfTasks}: #
+                    <span.decimal data-value=#{n}>
+                      #{n}
+
+                <dd>
+                  <ul>
+                    $forall (status,n) <- tasksByStatus
+                      <li>
+                        _{msgTaskStatus status}: #
+                        <span.decimal data-value=#{n}>
+                          #{n}
 
       
       <dl.margin>
-        <dt>
-          <label.bold.large-text>_{MsgCode}
-        <dd.margin>
-          #{code}
-
-        <dt>
-          <label.bold.large-text>_{MsgName}
-        <dd.margin>
-          #{name}
-
-        <dt>
-          <label.bold.large-text>_{MsgEffortHours}
-        <dd.margin>
-          #{show effort}
-
-        <dt>
-          <label.bold.large-text>_{MsgDurationHours}
-        <dd.margin>
-          #{show duration}
-
-        <dt>
-          <label.bold.large-text>_{MsgLocation}
-        <dd.margin>
-          #{location}
-
-        <dt>
-          <label.bold.large-text>_{MsgOutletType}
-        <dd.margin>
-          $with Entity _ (Outlet oname _) <- outlet
-            #{oname}
-
-        $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-          <dt>
-            <label.bold.large-text>_{MsgProjectStart}
-          <dd.margin>
-            $with dt <- fmt start
-              <time.daytime datetime=#{dt}>
-                #{dt}
-
-          <dt>
-            <label.bold.large-text>_{MsgProjectEnd}
-          <dd.margin>
-            $with dt <- fmt end
-              <time.daytime datetime=#{dt}>
-                #{dt}
       
         <dt>
           <label.bold.large-text>_{MsgDescription}

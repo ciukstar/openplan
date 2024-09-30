@@ -13,12 +13,14 @@ module Handler.Projects
   ) where
 
 import ClassyPrelude (readMay)
+
 import Control.Monad (void, join)
 
 import Data.Bifunctor (bimap, second)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (Text, pack)
-import Data.Time.Clock (NominalDiffTime, nominalDiffTimeToSeconds)
+import Data.Time.Clock (NominalDiffTime, nominalDiffTimeToSeconds, utctDay)
+import Data.Time.Calendar (diffDays)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
@@ -26,13 +28,13 @@ import Database.Esqueleto.Experimental
     ( SqlExpr, select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&))
     , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just
-    , subSelectList, subSelect, sum_
+    , subSelectList, subSelect, sum_, groupBy, countRows
     )
 import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
 import Database.Persist.Sql (fromSqlKey, toSqlKey)
 
 import Foundation
-    ( Handler, Form, widgetSnackbar, widgetTopbar
+    ( Handler, Form, widgetSnackbar, widgetTopbar, msgTaskStatus
     , Route (DataR, StaticR)
     , DataR
       ( PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR
@@ -47,7 +49,8 @@ import Foundation
       , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
       , MsgPhoto, MsgManagerNotAssigned, MsgDescription, MsgNoDescriptionGiven
       , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgProjectStatus
-      , MsgHours, MsgPlannedEffort, MsgActualEffort
+      , MsgPlannedEffort, MsgActualEffort, MsgNumberOfTasks, MsgRemainingEffort
+      , MsgHours, MsgProjectDuration
       )
     )
 
@@ -58,7 +61,7 @@ import Material3 (md3widget, md3selectWidget, daytimeLocalField, md3textareaWidg
 import Model
     ( msgSuccess, msgError, nominalDiffTimeToHours, hoursToNominalDiffTime
     , Tasks (Tasks), Outlet (Outlet)
-    , EmplId, Empl(Empl), User (User), Task
+    , EmplId, Empl(Empl), User (User), Task (Task)
     , PrjId
     , Prj
       ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
@@ -68,17 +71,20 @@ import Model
     , EntityField
       ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
       , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj, TaskLogTask
-      , TaskId, TaskLogEffort
+      , TaskId, TaskLogEffort, TaskStatus
       )
     )
 
 import Settings (widgetFile)
+import Settings.StaticFiles (js_echarts_min_js)
 
 import Text.Printf (printf)
 import Text.Hamlet (Html)
 
 import Yesod.Core
-    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler), addScript)
+    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler)
+    , addScript
+    )
 import Yesod.Core.Handler
     ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
 import Yesod.Core.Widget (setTitleI, whamlet)
@@ -93,7 +99,6 @@ import Yesod.Form.Types
     , FieldView (fvErrors, fvInput, fvLabel, fvRequired)
     )
 import Yesod.Persist.Core (YesodPersist(runDB))
-import Settings.StaticFiles (js_echarts_min_js)
 
 
 getMonitorPrjTasksR :: EmplId -> PrjId -> Handler Html
@@ -119,10 +124,17 @@ getMonitorPrjR eid pid = do
         where_ $ x ^. PrjId ==. val pid
         return (((x,o),(m,u)),actualEffort) )
 
+    tasksByStatus <- (bimap unValue unValue <$>) <$> runDB ( select $ do
+        x <- from $ table @Task
+        where_ $ x ^. TaskPrj ==. val pid
+        groupBy (x ^. TaskStatus)
+        orderBy [asc (x ^. TaskStatus)]
+        return (x ^. TaskStatus, countRows :: SqlExpr (Value Int)) )
+
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
-        setTitleI MsgProject 
+        setTitleI MsgProject
         idOverlay <- newIdent
         idCardCompletionDegree <- newIdent
         idChartCompletionDegree <- newIdent

@@ -1,3 +1,5 @@
+ProjectDuration: Project duration
+RemainingEffort: Remaining effort
 ActualEffort: Actual effort
 PlannedEffort: Planned effort
 TotalActualEffort: Total actual effort

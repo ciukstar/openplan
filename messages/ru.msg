@@ -1,3 +1,5 @@
+ProjectDuration: Длительность проекта
+RemainingEffort: Оставшиеся трудозатраты
 ActualEffort: Фактически отработано
 PlannedEffort: Запланировано трудозатрат
 TotalActualEffort: Всего фактически отработанных

@@ -21,8 +21,6 @@ Task
     parent TaskId Maybe OnDeleteCascade
     owner EmplId Maybe OnDeleteSetNull
     descr Textarea Maybe
-    actualEffort NominalDiffTime Maybe
-    actualDuration NominalDiffTime Maybe
 
 
 Prj sql=project
