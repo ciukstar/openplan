@@ -4,9 +4,9 @@
 <main.responsive.no-padding>
 
   <div.tabs>
-    <a.active href=@{DataR $ PrjR pid}>_{MsgProjectStatus}
-    <a href=@{DataR $ TasksR pid (Tasks [])}>_{MsgTasks}
-    <a href=@{DataR $ PrjTeamR pid}>_{MsgTeam}
+    <a.active href=@{DataR $ MonitorPrjR eid pid}>_{MsgProjectStatus}
+    <a href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgChart}
+    <a href=@{DataR $ MonitorPrjTaskLogsR eid pid}>_{MsgTaskLogs}
 
   <div.page.active.padding>
 
@@ -40,17 +40,15 @@
                   <span.unit data-unit=day data-value=#{diffDays (utctDay end) (utctDay start)}>
                     #{e}
                 <dd>
-
-                  $with fmt <- pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
-                    <ul>
-                      <li style="white-space:break-spaces">
-                        $with dt <- fmt start
-                          <time.daytime datetime=#{dt}>
-                            #{dt}
-                        \ &mdash; #
-                        $with dt <- fmt end
-                          <time.daytime datetime=#{dt}>
-                            #{dt}
+                  <ul>
+                    <li style="white-space:break-spaces">
+                      $with dt <- showUTCTime start
+                        <time.daytime datetime=#{dt}>
+                          #{dt}
+                      \ &mdash; #
+                      $with dt <- showUTCTime end
+                        <time.daytime datetime=#{dt}>
+                          #{dt}
                     
                 <dt>
                   <span.bold>_{MsgPlannedEffort}: #

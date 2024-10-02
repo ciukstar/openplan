@@ -1,0 +1,39 @@
+
+^{widgetTopbar (Just (DataR $ MonitorR eid,[])) (msgr MsgProject) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ MonitorPrjR eid pid}>_{MsgProjectStatus}
+    <a href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgChart}
+    <a.active href=@{DataR $ MonitorPrjTaskLogsR eid pid}>_{MsgTaskLogs}
+
+  <div.page.active.padding>
+    $if null logs
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoTaskLogsYet}.
+    $else
+      <table>
+        <thead>
+          <tr>
+            <th>_{MsgTimestamp}
+            <th>_{MsgAction}
+            <th>_{MsgEffortHours}
+            <th>_{MsgRemarks}
+        <tbody>
+          $forall ((Entity _ (TaskLog _ _ ts action effort remarks),_),_) <- logs
+            <tr>
+              <td>
+                #{show ts}
+              <td>
+                #{action}
+              <td>
+                #{show effort}
+              <td>
+                $maybe remarks <- remarks
+                  #{remarks}
+                  
+
+^{widgetSnackbar msgs}

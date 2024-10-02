@@ -8,7 +8,6 @@
         <div style="font-size:4rem;line-height:2">&#x1F4C2;
         <figcaption>
           <p>_{MsgNoProjectsYet}.
-          <p>_{MsgPleaseAddIfNecessary}.
           
     $else
       $forall ((Entity pid (Prj _ code name _ start end effort _ _ _),(manager,user)),actualEffort) <- prjs
@@ -38,13 +37,12 @@
                   <progress value=0 max=100>
     
                 $else
-                  $with a <- int2Double $ truncate $ ((*) ((^) 10 12)) $ nominalDiffTimeToSeconds actualEffort
-                    $with b <- int2Double $ truncate $ ((*) ((^) 10 12)) $ nominalDiffTimeToSeconds effort
-                      $with q <- pack $ printf "%.4f" $ a / b 
-                        <div.max.center-align>
-                          <span.percent data-value=#{q}>
-                            #{q}
-                        <progress value=#{q} max=1>
+                  $with (a,b) <- (nominalDiffTimeToDoubleSeconds actualEffort, nominalDiffTimeToDoubleSeconds effort)
+                    $with q <- pack $ printf "%.4f" $ a / b 
+                      <div.max.center-align>
+                        <span.percent data-value=#{q}>
+                          #{q}
+                      <progress value=#{q} max=1>
                     
                 
               <div.row>

@@ -1,0 +1,21 @@
+
+^{widgetTopbar (Just (DataR $ MonitorR eid,[])) (msgr MsgProject) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.tabs>
+    <a href=@{DataR $ MonitorPrjR eid pid}>_{MsgProjectStatus}
+    <a.active href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgChart}
+    <a href=@{DataR $ MonitorPrjTaskLogsR eid pid}>_{MsgTaskLogs}
+
+  <div.page.active.padding>
+    $if null roots
+      <figure style="text-align:center">
+        <div style="font-size:4rem;line-height:2">&#x1F4C2;
+        <figcaption>
+          <p>_{MsgNoTaskLogsYet}.
+    $else
+      <div ##{idChart} style="position:relative" class="gantt">
+                  
+
+^{widgetSnackbar msgs}

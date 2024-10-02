@@ -210,7 +210,7 @@ fillDemoEn = do
 
     t11 <- insert task11
 
-    let l111 = TaskLog { taskLogTask = t11
+    let l1 = TaskLog { taskLogTask = t11
                       , taskLogEmpl = empl2
                       , taskLogTime = taskStart task11
                       , taskLogAction = "TaskStatusNotStarted -> TaskStatusInProgress"
@@ -218,11 +218,11 @@ fillDemoEn = do
                       , taskLogRemarks = Just (Textarea "Start task")
                       }
 
-    insert_ l111
+    insert_ l1
 
     insert_ $ TaskLog { taskLogTask = t11
                       , taskLogEmpl = empl2
-                      , taskLogTime = addUTCTime eightHoursTime (taskLogTime l111)
+                      , taskLogTime = addUTCTime eightHoursTime (taskLogTime l1)
                       , taskLogAction = "TaskStatusInProgress -> TaskStatusPaused"
                       , taskLogEffort = eightHoursTime
                       , taskLogRemarks = Just (Textarea "Pause task")

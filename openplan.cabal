@@ -38,6 +38,7 @@ library
       Handler.Docs
       Handler.Employees
       Handler.Home
+      Handler.Monitor
       Handler.Outlets
       Handler.Projects
       Handler.Tasks

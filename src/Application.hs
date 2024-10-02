@@ -53,6 +53,12 @@ import Handler.Home ( getHomeR )
 import Handler.Docs ( getDocsR )
 
 
+import Handler.Monitor 
+    ( getMonitorR, getMonitorPrjR
+    , getMonitorPrjChartR, getMonitorPrjTaskLogsR
+    )
+    
+
 import Handler.Tasks 
     ( getTasksR, postTasksR
     , getTaskR, postTaskR
@@ -65,8 +71,7 @@ import Handler.Projects
     ( getPrjsR, postPrjsR
     , getPrjR, postPrjR
     , getPrjNewR, getPrjEditR, postPrjDeleR
-    , getPrjTeamR, getMonitorR, getMonitorPrjR
-    , getMonitorPrjTasksR
+    , getPrjTeamR
     )
 
 import Handler.Outlets

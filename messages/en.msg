@@ -1,3 +1,8 @@
+Chart: Chart
+Action: Action
+Timestamp: Timestamp
+NoTaskLogsYet: There are no tasks logs yet
+TaskLogs: Logs
 OverdueTasks: Overdue tasks
 OngoingTasks: Ongoing tasks
 CompletedTasks: Completed tasks 

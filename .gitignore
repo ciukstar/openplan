@@ -24,3 +24,6 @@ deploy-demo-en.sh
 deploy-demo-ru.sh
 env.sh
 openplan
+node_modules/
+package-lock.json
+package.json

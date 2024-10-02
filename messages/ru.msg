@@ -1,3 +1,8 @@
+Chart: Диаграмма
+Action: Действие
+Timestamp: Временная метка
+NoTaskLogsYet: Журналов задач пока нет
+TaskLogs: Журнал
 OverdueTasks: Просроченные задачи
 OngoingTasks: Текущие задачи
 CompletedTasks: Выполненные задачи

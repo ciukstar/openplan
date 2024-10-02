@@ -234,7 +234,8 @@ instance Yesod App where
     isAuthorized (DataR (TasksR _ _)) _ = isAuthenticated
 
     
-    isAuthorized (DataR (MonitorPrjTasksR eid _)) _ = isEmployeeSelf eid
+    isAuthorized (DataR (MonitorPrjTaskLogsR eid _)) _ = isEmployeeSelf eid
+    isAuthorized (DataR (MonitorPrjChartR eid _)) _ = isEmployeeSelf eid
     isAuthorized (DataR (MonitorPrjR eid _)) _ = isEmployeeSelf eid
     isAuthorized (DataR (MonitorR eid)) _ = setUltDestCurrent >> isEmployeeSelf eid
     isAuthorized (DataR (PrjTeamR _)) _ = isAuthenticated
