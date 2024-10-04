@@ -26,7 +26,6 @@ import Database.Esqueleto.Experimental
 import qualified Database.Esqueleto.Experimental as E ((==.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
-
 import Text.Email.Validate (emailAddress, localPart)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)

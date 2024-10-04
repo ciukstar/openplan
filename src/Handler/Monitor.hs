@@ -10,7 +10,6 @@ module Handler.Monitor
   , getMonitorPrjChartR, getMonitorPrjTaskLogsR
   ) where
 
-import ClassyPrelude (readMay, getCurrentTime, UTCTime)
 
 import Control.Monad (void, join, forM)
 import Control.Monad.IO.Class (liftIO)
@@ -20,7 +19,7 @@ import qualified Data.Aeson as A (Value)
 import Data.Bifunctor (bimap, second)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (Text, pack)
-import Data.Time.Clock (NominalDiffTime, nominalDiffTimeToSeconds, utctDay)
+import Data.Time.Clock (getCurrentTime, UTCTime, NominalDiffTime, nominalDiffTimeToSeconds, utctDay)
 import Data.Time.Calendar (diffDays)
 import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -32,8 +31,8 @@ import Database.Esqueleto.Experimental
     , subSelectList, subSelect, exists, sum_, groupBy, countRows, max_
     , not_, isNothing_
     )
-import Database.Persist (Entity (Entity), entityVal, insert_, replace, delete)
-import Database.Persist.Sql (fromSqlKey, toSqlKey)
+import Database.Persist (Entity (Entity))
+import Database.Persist.Sql (fromSqlKey)
 
 import Foundation
     ( Handler, Form, widgetSnackbar, widgetTopbar, msgTaskStatus
@@ -55,7 +54,7 @@ import Foundation
       , MsgPlannedEffort, MsgActualEffort, MsgNumberOfTasks, MsgRemainingEffort
       , MsgHours, MsgProjectDuration, MsgCompletedTasks, MsgOngoingTasks
       , MsgOverdueTasks, MsgTaskLogs, MsgNoTaskLogsYet, MsgTimestamp, MsgAction
-      , MsgRemarks, MsgChart
+      , MsgRemarks, MsgChart, MsgGantt, MsgGoogle
       )
     )
 
@@ -122,14 +121,14 @@ getMonitorPrjTaskLogsR eid pid = do
     defaultLayout $ do
         setTitleI MsgTaskLogs
         idOverlay <- newIdent
-        $(widgetFile "data/prjs/monitor/logs")
+        $(widgetFile "data/monitor/logs")
     
 
 
 getMonitorPrjChartR :: EmplId -> PrjId -> Handler Html
 getMonitorPrjChartR eid pid = do
 
-    trees@(TaskTree roots) <- fetchTasks pid Nothing
+    -- trees@(TaskTree roots) <- fetchTasks pid Nothing
 
     tasks <- (GanttTask . second (fromMaybe 0 . join . unValue) <$>) <$> runDB ( select $ do
         x <- from $ table @Task
@@ -152,7 +151,7 @@ getMonitorPrjChartR eid pid = do
         addScript $ StaticR js_jsgantt_js
         addStylesheet $ StaticR css_jsgantt_css
          
-        $(widgetFile "data/prjs/monitor/chart")
+        $(widgetFile "data/monitor/chart")
 
 
 showUTCTime :: UTCTime -> Text 
@@ -177,7 +176,6 @@ instance ToJSON GanttTask where
                                         (nominalDiffTimeToHours hours / nominalDiffTimeToHours effort) * 100.0
                               in (printf "%.2f" p :: String)
                             )
-               , "pRes" .= (0 :: Int)
                , "pParent" .= (0 :: Int)
                , "pClass" .= ("gtaskblue" :: Text)
                ]
@@ -193,7 +191,6 @@ instance ToJSON GanttTask where
                                         (nominalDiffTimeToHours hours / nominalDiffTimeToHours effort) * 100.0
                               in (printf "%.2f" p :: String)
                             )
-               , "pRes" .= (0 :: Int)
                , "pParent" .= fromSqlKey parent
                , "pClass" .= ("gtaskblue" :: Text)
                , "pDepend" .= fromSqlKey parent
@@ -288,7 +285,7 @@ getMonitorPrjR eid pid = do
         idCardCompletionDegree <- newIdent
         idChartCompletionDegree <- newIdent
         addScript $ StaticR js_echarts_min_js
-        $(widgetFile "data/prjs/monitor/prj")
+        $(widgetFile "data/monitor/prj")
 
 
 getMonitorR :: EmplId -> Handler Html
@@ -315,7 +312,7 @@ getMonitorR eid = do
     defaultLayout $ do
         setTitleI MsgProjects
         idOverlay <- newIdent
-        $(widgetFile "data/prjs/monitor/prjs")
+        $(widgetFile "data/monitor/prjs")
   where
       nominalDiffTimeToDoubleSeconds =
           int2Double . truncate . (*) ((^) @_ @Integer  10 12) . nominalDiffTimeToSeconds

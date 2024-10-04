@@ -1,3 +1,5 @@
+Google: Google
+Gantt: Гант
 Chart: Диаграмма
 Action: Действие
 Timestamp: Временная метка

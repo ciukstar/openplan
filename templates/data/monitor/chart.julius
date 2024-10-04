@@ -1,0 +1,53 @@
+
+const tasks = #{rawJS $ encodeToLazyText tasks};
+
+var g = new JSGantt.GanttChart(document.getElementById(#{idChart}), 'day');
+
+g.setOptions({
+  vCaptionType: 'Complete',
+  vQuarterColWidth: 36,
+  vDateTaskDisplayFormat: 'day dd month yyyy',
+  vDayMajorDateDisplayFormat: 'mon yyyy',
+  vWeekMinorDateDisplayFormat: 'dd mon',
+  vLang: navigator.language.includes('ru') ? 'ru' : 'en',
+  vShowTaskInfoLink: 1,
+  vShowEndWeekDate: 0,
+  vUseSingleCell: 10000,
+  vFormatArr: ['Hour','Day', 'Week', 'Month', 'Quarter'],
+  vShowRes: 0,
+  vDateTaskTableDisplayFormat: navigator.language.includes('ru') ? 'dd.mm.yyyy' : 'dd/mm/yyyy',
+  vTooltipTemplate: function (task) {
+    let dfmt = { year: 'numeric', month: 'short', day: 'numeric' };
+    let pfmt = { style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2, useGrouping: true };
+    return `
+<table style="width:auto">
+  <caption style="caption-side:top;text-align:left;padding:1rem">
+    ${task.getName()}
+  </caption>
+  <tbody>
+    <tr>
+      <th scope="row">${g.vLangs[g.vLang]['startdate']}:</th>
+      <td>${task.getStart().toLocaleDateString(navigator.language,dfmt)}</td>
+    </tr>
+    <tr>
+      <th scope="row">${g.vLangs[g.vLang]['enddate']}:</th>
+      <td>${task.getEnd().toLocaleDateString(navigator.language,dfmt)}</td>
+    </tr>
+    <tr>
+      <th scope="row">${g.vLangs[g.vLang]['dur']}:</th>
+      <td>${task.getDuration('day',g.vLangs[g.vLang])}</td>
+    </tr>
+    <tr>
+      <th scope="row">${g.vLangs[g.vLang]['completion']}:</th>
+      <td>${(task.getCompVal() / 100).toLocaleString(navigator.language,pfmt)}</td>
+    </tr>
+  </tbody>
+</table>
+`;
+  }
+});
+
+
+tasks.forEach(task => { g.AddTaskItemObject(task); });
+
+g.Draw();

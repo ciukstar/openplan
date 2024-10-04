@@ -3,7 +3,7 @@
 
 <main.responsive.no-padding>
 
-  <div.tabs>
+  <div.tabs.min>
     <a href=@{DataR $ MonitorPrjR eid pid}>_{MsgProjectStatus}
     <a href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgChart}
     <a.active href=@{DataR $ MonitorPrjTaskLogsR eid pid}>_{MsgTaskLogs}

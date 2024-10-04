@@ -1,3 +1,5 @@
+Google: Google
+Gantt: Gantt
 Chart: Chart
 Action: Action
 Timestamp: Timestamp
