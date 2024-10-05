@@ -11,8 +11,10 @@
   <div.page.active>
 
     <div.tabs.max>
-      <a href=@{DataR $ MonitorPrjGanttR eid pid}>_{MsgGoogle}
-      <a.active href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgGantt}
+      <a.active href=@{DataR $ MonitorPrjGanttR eid pid}>
+        _{MsgGantt} (_{MsgGoogle})
+      <a href=@{DataR $ MonitorPrjChartR eid pid}>
+        _{MsgGantt} (_{MsgJSGantt})
 
     <div.page.active.padding>
 
@@ -22,7 +24,6 @@
           <figcaption>
             <p>_{MsgNoTaskLogsYet}.
       $else
-        <div ##{idChart} style="position:relative" class="gantt">
-                  
+        <div ##{idChart}> 
 
 ^{widgetSnackbar msgs}

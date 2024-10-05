@@ -5,7 +5,7 @@
 
   <div.tabs.min>
     <a.active href=@{DataR $ MonitorPrjR eid pid}>_{MsgProjectStatus}
-    <a href=@{DataR $ MonitorPrjChartR eid pid}>_{MsgChart}
+    <a href=@{DataR $ MonitorPrjGanttR eid pid}>_{MsgChart}
     <a href=@{DataR $ MonitorPrjTaskLogsR eid pid}>_{MsgTaskLogs}
 
   <div.page.active.padding>

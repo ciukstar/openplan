@@ -8,78 +8,69 @@
 module Handler.Monitor
   ( getMonitorR, getMonitorPrjR
   , getMonitorPrjChartR, getMonitorPrjTaskLogsR
+  , getMonitorPrjGanttR
   ) where
 
 
-import Control.Monad (void, join, forM)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad (join)
 
 import Data.Aeson (ToJSON, toJSON, object, (.=))
-import qualified Data.Aeson as A (Value)
+import qualified Data.Aeson as A (Value(Null,String))
 import Data.Bifunctor (bimap, second)
-import Data.Maybe (fromMaybe, isJust)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack)
-import Data.Time.Clock (getCurrentTime, UTCTime, NominalDiffTime, nominalDiffTimeToSeconds, utctDay)
+import Data.Time.Clock
+    ( UTCTime, NominalDiffTime, nominalDiffTimeToSeconds, utctDay)
 import Data.Time.Calendar (diffDays)
-import Data.Time.LocalTime (utcToLocalTime, utc, localTimeToUTC)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 
 import Database.Esqueleto.Experimental
     ( SqlExpr, select, selectOne, from, table, where_, val, orderBy, asc
     , (^.), (?.), (==.), (:&)((:&)), (<=.), (>.)
-    , Value (unValue), on, innerJoin, leftJoin, in_, subSelectMaybe, just
-    , subSelectList, subSelect, exists, sum_, groupBy, countRows, max_
-    , not_, isNothing_
+    , Value (unValue), on, innerJoin, leftJoin, subSelectMaybe, just
+    , subSelect, exists, sum_, groupBy, countRows, max_
+    , not_
     )
 import Database.Persist (Entity (Entity))
 import Database.Persist.Sql (fromSqlKey)
 
 import Foundation
-    ( Handler, Form, widgetSnackbar, widgetTopbar, msgTaskStatus
+    ( Handler, widgetSnackbar, widgetTopbar, msgTaskStatus
     , Route (DataR, StaticR)
     , DataR
-      ( PrjsR, PrjR, PrjNewR, PrjEditR, PrjDeleR, TasksR, UserPhotoR
-      , PrjTeamR, MonitorR, MonitorPrjR, MonitorPrjTaskLogsR
-      , MonitorPrjChartR
+      ( UserPhotoR, MonitorR, MonitorPrjR, MonitorPrjTaskLogsR
+      , MonitorPrjGanttR, MonitorPrjChartR
       )
     , AppMessage
-      ( MsgSave, MsgCancel, MsgAlreadyExists, MsgEffortHours
-      , MsgName, MsgRecordAdded, MsgInvalidFormData, MsgDeleteAreYouSure
-      , MsgConfirmPlease, MsgProperties, MsgRecordDeleted, MsgRecordEdited
-      , MsgProjects, MsgProject, MsgNoProjectsYet, MsgPleaseAddIfNecessary
-      , MsgLocation, MsgOutletType, MsgProjectStart, MsgProjectEnd, MsgTasks
-      , MsgCode, MsgDele, MsgProjectManager, MsgNotAppointedYet, MsgManager
+      ( MsgEffortHours, MsgProjects, MsgProject, MsgNoProjectsYet
+      , MsgLocation, MsgOutletType, MsgProjectManager, MsgNotAppointedYet, MsgManager
       , MsgPhoto, MsgManagerNotAssigned, MsgDescription, MsgNoDescriptionGiven
-      , MsgTeam, MsgCompletionPercentage, MsgDurationHours, MsgProjectStatus
+      , MsgCompletionPercentage, MsgProjectStatus
       , MsgPlannedEffort, MsgActualEffort, MsgNumberOfTasks, MsgRemainingEffort
-      , MsgHours, MsgProjectDuration, MsgCompletedTasks, MsgOngoingTasks
+      , MsgProjectDuration, MsgCompletedTasks, MsgOngoingTasks
       , MsgOverdueTasks, MsgTaskLogs, MsgNoTaskLogsYet, MsgTimestamp, MsgAction
-      , MsgRemarks, MsgChart, MsgGantt, MsgGoogle
+      , MsgRemarks, MsgChart, MsgGantt, MsgGoogle, MsgTaskId, MsgTaskName
+      , MsgStartDate, MsgEndDate, MsgDuration, MsgPercentComplete, MsgDependencies
+      , MsgJSGantt
       )
     )
 
 import GHC.Float (int2Double)
 
-import Material3 (md3widget, md3selectWidget, daytimeLocalField, md3textareaWidget)
-
 import Model
-    ( msgSuccess, msgError, nominalDiffTimeToHours, hoursToNominalDiffTime
-    , TaskId, Tasks (Tasks), Outlet (Outlet)
+    ( nominalDiffTimeToHours
+    , Outlet (Outlet)
     , EmplId, Empl(Empl), User (User), Task (Task)
     , PrjId
-    , Prj
-      ( Prj, prjCode, prjName, prjLocation, prjOutlet, prjStart, prjEnd
-      , prjManager, prjDescr, prjDuration, prjEffort
-      )
+    , Prj (Prj)
     , TaskLog (TaskLog)
     , TaskStatus
-      ( TaskStatusCompleted, TaskStatusInProgress, TaskStatusPaused
-      , TaskStatusNotStarted, TaskStatusPartiallyCompleted, TaskStatusUncompleted
+      ( TaskStatusCompleted
       )
     , EntityField
-      ( PrjCode, PrjId, OutletName, OutletId, PrjOutlet, PrjManager, EmplId
-      , EmplUser, UserId, UserName, UserEmail, TaskOwner, TaskPrj, TaskLogTask
-      , TaskId, TaskLogEffort, TaskStatus, TaskLogTime, TaskEnd, TaskLogEmpl, TaskParent
+      ( PrjId, OutletId, PrjOutlet, PrjManager, EmplId, EmplUser, UserId
+      , TaskPrj, TaskLogTask, TaskId, TaskLogEffort
+      , TaskStatus, TaskLogTime, TaskEnd, TaskLogEmpl
       )
     )
 
@@ -91,17 +82,11 @@ import Text.Hamlet (Html)
 import Text.Julius (rawJS)
 
 import Yesod.Core
-    ( Yesod(defaultLayout), SomeMessage (SomeMessage), MonadHandler (liftHandler)
-    , addScript, addScriptRemote, addStylesheetRemote, addScriptRemoteAttrs, addStylesheet
+    ( Yesod(defaultLayout), addScript, addScriptRemote, addStylesheet, array
     )
 import Yesod.Core.Handler
-    ( newIdent, getMessageRender, getMessages, addMessageI, redirect)
+    ( newIdent, getMessageRender, getMessages)
 import Yesod.Core.Widget (setTitleI)
-import Yesod.Form.Types
-    ( Field, FormResult (FormSuccess)
-    , FieldSettings (FieldSettings, fsLabel, fsTooltip, fsId, fsName, fsAttrs)
-    , FieldView (fvErrors, fvInput, fvLabel, fvRequired)
-    )
 import Yesod.Persist.Core (YesodPersist(runDB))
 import Data.Aeson.Text (encodeToLazyText)
 
@@ -122,13 +107,36 @@ getMonitorPrjTaskLogsR eid pid = do
         setTitleI MsgTaskLogs
         idOverlay <- newIdent
         $(widgetFile "data/monitor/logs")
-    
 
+
+getMonitorPrjGanttR :: EmplId -> PrjId -> Handler Html
+getMonitorPrjGanttR eid pid = do
+
+    tasks <- (GoogleGanttTask . second (fromMaybe 0 . join . unValue) <$>) <$> runDB ( select $ do
+        x <- from $ table @Task
+        let hours :: SqlExpr (Value (Maybe (Maybe NominalDiffTime)))
+            hours = subSelect $ do
+                l <- from $ table @TaskLog
+                where_ $ l ^. TaskLogTask ==. x ^. TaskId
+                return $ sum_ $ l ^. TaskLogEffort
+        where_ $ x ^. TaskPrj ==. val pid
+        orderBy [asc (x ^. TaskId)]
+        return (x,hours) )
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgTaskLogs
+        idOverlay <- newIdent
+        idChart <- newIdent
+        
+        addScriptRemote "https://www.gstatic.com/charts/loader.js"
+         
+        $(widgetFile "data/monitor/gantt")
+    
 
 getMonitorPrjChartR :: EmplId -> PrjId -> Handler Html
 getMonitorPrjChartR eid pid = do
-
-    -- trees@(TaskTree roots) <- fetchTasks pid Nothing
 
     tasks <- (GanttTask . second (fromMaybe 0 . join . unValue) <$>) <$> runDB ( select $ do
         x <- from $ table @Task
@@ -158,10 +166,40 @@ showUTCTime :: UTCTime -> Text
 showUTCTime = pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
 
 
-newtype TaskTree = TaskTree [((Entity Task,(Maybe (Entity Empl),Maybe (Entity User))), TaskTree)]
+newtype GoogleGanttTask = GoogleGanttTask (Entity Task,NominalDiffTime)
+
+instance ToJSON GoogleGanttTask where
+    toJSON :: GoogleGanttTask -> A.Value
+    toJSON (GoogleGanttTask (Entity tid (Task _ _ name start end effort _ _status Nothing _owner _desr),hours)) =
+        array [ A.String . pack . show . fromSqlKey $ tid
+              , A.String name
+              , A.String . showUTCTime $ start
+              , A.String . showUTCTime $ end
+              , A.Null
+              , let p = if effort == 0
+                        then 0
+                        else
+                          (nominalDiffTimeToHours hours / nominalDiffTimeToHours effort) * 100.0
+                in A.String . pack $ printf "%.2f" p
+              , A.Null
+              ]
+    
+    toJSON (GoogleGanttTask (Entity tid (Task _ _ name start end effort _ _status (Just parent) _owner _desr),hours)) = 
+        array [ A.String . pack . show . fromSqlKey $ tid
+              , A.String name
+              , A.String . showUTCTime $ start
+              , A.String . showUTCTime $ end
+              , A.Null
+              , let p = if effort == 0
+                        then 0
+                        else
+                          (nominalDiffTimeToHours hours / nominalDiffTimeToHours effort) * 100.0
+                in A.String . pack $ printf "%.2f" p
+              , A.String . pack . show . fromSqlKey $ parent
+              ]
+        
 
 newtype GanttTask = GanttTask (Entity Task,NominalDiffTime)
-
 
 instance ToJSON GanttTask where
     toJSON :: GanttTask -> A.Value
@@ -194,25 +232,7 @@ instance ToJSON GanttTask where
                , "pParent" .= fromSqlKey parent
                , "pClass" .= ("gtaskblue" :: Text)
                , "pDepend" .= fromSqlKey parent
-               ] 
-    
-
-
-
-fetchTasks :: PrjId -> Maybe TaskId -> Handler TaskTree
-fetchTasks prjId tid = do
-    tasks <- runDB ( select $ do
-        x :& o :& u <- from $ table @Task
-            `leftJoin` table @Empl `on` (\(x :& o) -> x ^. TaskOwner ==. o ?. EmplId)
-            `leftJoin` table @User `on` (\(_ :& o :& u) -> o ?. EmplUser ==. u ?. UserId)
-        where_ $ x ^. TaskPrj ==. val prjId
-        where_ $ case tid of
-          Nothing -> isNothing_ $ x ^. TaskParent
-          Just parent -> x ^. TaskParent ==. just (val parent)
-        orderBy [asc (x ^. TaskId)]
-        return (x,(o,u)) )
-
-    TaskTree <$> forM tasks ( \p@(Entity parent _,_) -> (p,) <$> fetchTasks prjId (Just parent) )
+               ]
 
 
 getMonitorPrjR :: EmplId -> PrjId -> Handler Html
@@ -233,8 +253,6 @@ getMonitorPrjR eid pid = do
                 
         where_ $ x ^. PrjId ==. val pid
         return (((x,o),(m,u)),actualEffort) )
-
-    now <- liftIO getCurrentTime
 
     completedTasks <- maybe 0 unValue <$> runDB ( selectOne $ do
         x <- from $ table @Task

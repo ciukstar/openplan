@@ -56,6 +56,7 @@ import Handler.Docs ( getDocsR )
 import Handler.Monitor 
     ( getMonitorR, getMonitorPrjR
     , getMonitorPrjChartR, getMonitorPrjTaskLogsR
+    , getMonitorPrjGanttR
     )
     
 

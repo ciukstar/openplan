@@ -1,3 +1,12 @@
+Tooltip: Tooltip
+Dependencies: Dependencies
+PercentComplete: Percent complete
+Duration: Duration
+EndDate: End date
+StartDate: Start date
+TaskName: Task name
+TaskId: Task ID
+JSGantt: JSGantt
 Google: Google
 Gantt: Gantt
 Chart: Chart

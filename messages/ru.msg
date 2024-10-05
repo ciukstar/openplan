@@ -1,3 +1,12 @@
+Tooltip: Подсказка
+Dependencies: Зависимости
+PercentComplete: Процент завершения
+Duration: Продолжительность
+EndDate: Дата окончания
+StartDate: Дата начала
+TaskName: Имя задачи
+TaskId: Идентификатор задачи
+JSGantt: JSGantt
 Google: Google
 Gantt: Гант
 Chart: Диаграмма

@@ -19,6 +19,7 @@
 /data DataR:
 
     /employees/#EmplId/monitor/#PrjId/logs  MonitorPrjTaskLogsR GET
+    /employees/#EmplId/monitor/#PrjId/gantt MonitorPrjGanttR    GET
     /employees/#EmplId/monitor/#PrjId/chart MonitorPrjChartR    GET
     /employees/#EmplId/monitor/#PrjId       MonitorPrjR         GET
     /employees/#EmplId/monitor              MonitorR            GET

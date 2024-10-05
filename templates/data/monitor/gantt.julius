@@ -1,0 +1,28 @@
+
+google.charts.load('current', {'packages':['gantt'],'language':navigator.language});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+
+  var data = new google.visualization.DataTable();
+  data.addColumn('string', #{msgr MsgTaskId});
+  data.addColumn('string', #{msgr MsgTaskName});
+  data.addColumn('date', #{msgr MsgStartDate});
+  data.addColumn('date', #{msgr MsgEndDate});
+  data.addColumn('number', #{msgr MsgDuration});
+  data.addColumn('number', #{msgr MsgPercentComplete});
+  data.addColumn('string', #{msgr MsgDependencies});
+
+  data.addRows(#{rawJS $ encodeToLazyText tasks}.map(
+    ([tid,name,s,e,d,pc,ds]) => [tid,name,new Date(s),new Date(e),d,Number(pc),ds]
+  ));
+
+  var options = {
+    height: data.getNumberOfRows() * 60
+  };
+
+  var chart = new google.visualization.Gantt(document.getElementById(#{idChart}));
+  
+  chart.draw(data, options);
+  
+}
